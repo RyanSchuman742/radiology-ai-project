@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chest X-ray Interpretability Tool</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Chest X-ray Interpretability Tool</h1>
+    <p class="disclaimer">Educational prototype only — not a medical device, not a diagnosis.</p>
+
+    {% if error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form action="/diagnose" method="post" enctype="multipart/form-data">
+      <input type="file" name="xray" accept=".png,.jpg,.jpeg" required>
+      <button type="submit">Analyze X-ray</button>
+    </form>
+  </main>
+</body>
+</html>

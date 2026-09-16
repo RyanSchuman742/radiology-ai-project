@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Result — Chest X-ray Interpretability Tool</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Result</h1>
+    <p class="disclaimer">Educational prototype only — not a medical device, not a diagnosis.</p>
+
+    <div class="images">
+      <figure>
+        <img src="{{ original_data_uri }}" alt="Original X-ray">
+        <figcaption>Original</figcaption>
+      </figure>
+      <figure>
+        <img src="{{ heatmap_data_uri }}" alt="Grad-CAM heatmap overlay">
+        <figcaption>Grad-CAM heatmap</figcaption>
+      </figure>
+    </div>
+
+    <section class="diagnosis">
+      <h2>Predicted finding: {{ predicted_class }}</h2>
+      <p>Confidence: {{ confidence }}</p>
+      <ul>
+        {% for name, pct in class_probabilities.items() %}
+          <li>{{ name }}: {{ pct }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="explanation">
+      <h2>Explanation</h2>
+      <p>{{ explanation }}</p>
+    </section>
+
+    <a href="/">Analyze another X-ray</a>
+  </main>
+</body>
+</html>

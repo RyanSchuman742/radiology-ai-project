@@ -1,0 +1,21 @@
+# Data (large, downloadable via src/download_pneumonia_dataset.py)
+data/
+
+# Secrets
+.env
+
+# Uploaded images (runtime, not source)
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
