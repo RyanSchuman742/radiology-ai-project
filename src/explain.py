@@ -45,11 +45,18 @@ def get_explanation(predicted_class: str, confidence: float, class_probabilities
         "Explain this result."
     )
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=400,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_prompt}],
-    )
+    try:
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=400,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+    except anthropic.APIError as e:
+        return (
+            "(Explanation unavailable - Anthropic API error: "
+            f"{e.message if hasattr(e, 'message') else e}. "
+            f"Model predicted '{predicted_class}' with {confidence:.1%} confidence.)"
+        )
 
     return response.content[0].text
