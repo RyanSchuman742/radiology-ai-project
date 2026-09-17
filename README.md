@@ -1,3 +1,13 @@
+---
+title: Chest X-ray Interpretability Tool
+emoji: 🫁
+colorFrom: blue
+colorTo: gray
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Chest X-ray Interpretability Tool
 
 Upload a chest X-ray, get back a predicted diagnosis, a Grad-CAM heatmap
