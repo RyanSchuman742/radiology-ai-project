@@ -48,7 +48,7 @@ def get_explanation(predicted_class: str, confidence: float, class_probabilities
     try:
         response = client.messages.create(
             model=MODEL,
-            max_tokens=400,
+            max_tokens=600,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_prompt}],
         )
