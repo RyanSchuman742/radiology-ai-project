@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from PIL import Image
 
-from src.explain import get_explanation
-from src.gradcam import diagnose_with_heatmap
+from src.explain_multilabel import get_explanation
+from src.gradcam_multilabel import diagnose_with_heatmap
 
 load_dotenv()
 
@@ -88,23 +88,39 @@ def diagnose():
     except FileNotFoundError:
         return render_template(
             "index.html",
-            error="No trained model found yet. Train the classifier first (src/train_classifier.py).",
+            error="No trained model found yet. Train the classifier first (src/train_multilabel.py).",
         )
     finally:
         os.remove(temp_path)
 
     heatmap_image = Image.fromarray(result["heatmap_overlay"])
-    explanation = get_explanation(
-        result["predicted_class"], result["confidence"], result["class_probabilities"], heatmap_image
+    explanation = get_explanation(result["findings"], result["legend"], heatmap_image)
+
+    individual_heatmap_uris = {
+        condition: image_to_data_uri(Image.fromarray(overlay))
+        for condition, overlay in result["individual_heatmaps"].items()
+    }
+
+    findings_display = [
+        {
+            "condition": f["condition"],
+            "confidence": f"{f['confidence']:.1%}",
+            "color": result["legend"][f["condition"]],
+        }
+        for f in result["findings"]
+    ]
+
+    all_probabilities_sorted = sorted(
+        result["all_probabilities"].items(), key=lambda x: x[1], reverse=True
     )
 
     return render_template(
         "result.html",
         original_data_uri=image_to_data_uri(original_image.convert("RGB")),
         heatmap_data_uri=image_to_data_uri(heatmap_image),
-        predicted_class=result["predicted_class"],
-        confidence=f"{result['confidence']:.1%}",
-        class_probabilities={k: f"{v:.1%}" for k, v in result["class_probabilities"].items()},
+        individual_heatmap_uris=individual_heatmap_uris,
+        findings=findings_display,
+        all_probabilities=[(name, f"{prob:.1%}") for name, prob in all_probabilities_sorted],
         explanation=explanation,
         warning=warning,
     )

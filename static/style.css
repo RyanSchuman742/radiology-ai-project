@@ -7,7 +7,7 @@ body {
 }
 
 main {
-  max-width: 720px;
+  max-width: 820px;
   margin: 0 auto;
 }
 
@@ -82,11 +82,78 @@ button:hover {
   margin-top: 0.4rem;
 }
 
-.diagnosis, .explanation {
+.diagnosis, .explanation, .individual-heatmaps {
   background: #1a1d24;
   border-radius: 8px;
   padding: 1rem 1.25rem;
   margin-top: 1.5rem;
+}
+
+.findings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.findings-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+}
+
+.swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+details {
+  margin-top: 0.75rem;
+  color: #9aa0a6;
+}
+
+details summary {
+  cursor: pointer;
+  color: #4f8cff;
+}
+
+details ul {
+  margin-top: 0.5rem;
+}
+
+.hint {
+  color: #9aa0a6;
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.thumb-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.thumb-grid figure {
+  margin: 0;
+  width: 140px;
+}
+
+.thumb-grid img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #2a2d35;
+}
+
+.thumb-grid figcaption {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #9aa0a6;
+  margin-top: 0.3rem;
 }
 
 a {

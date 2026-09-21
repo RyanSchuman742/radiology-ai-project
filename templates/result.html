@@ -19,20 +19,47 @@
         <figcaption>Original</figcaption>
       </figure>
       <figure>
-        <img src="{{ heatmap_data_uri }}" alt="Grad-CAM heatmap overlay">
-        <figcaption>Grad-CAM heatmap</figcaption>
+        <img src="{{ heatmap_data_uri }}" alt="Multi-color Grad-CAM heatmap">
+        <figcaption>Grad-CAM heatmap (all findings)</figcaption>
       </figure>
     </div>
 
     <section class="diagnosis">
-      <h2>Predicted finding: {{ predicted_class }}</h2>
-      <p>Confidence: {{ confidence }}</p>
-      <ul>
-        {% for name, pct in class_probabilities.items() %}
-          <li>{{ name }}: {{ pct }}</li>
-        {% endfor %}
-      </ul>
+      <h2>Findings</h2>
+      {% if findings %}
+        <ul class="findings-list">
+          {% for f in findings %}
+            <li><span class="swatch" style="background:{{ f.color }}"></span>{{ f.condition }}: {{ f.confidence }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No Finding — none of the 14 tracked conditions crossed the decision threshold.</p>
+      {% endif %}
+
+      <details>
+        <summary>All 14 condition probabilities</summary>
+        <ul>
+          {% for name, pct in all_probabilities %}
+            <li>{{ name }}: {{ pct }}</li>
+          {% endfor %}
+        </ul>
+      </details>
     </section>
+
+    {% if individual_heatmap_uris %}
+    <section class="individual-heatmaps">
+      <h2>Individual condition heatmaps</h2>
+      <p class="hint">The composite above blends overlapping conditions into a mixed color. These show each one in isolation.</p>
+      <div class="thumb-grid">
+        {% for condition, uri in individual_heatmap_uris.items() %}
+          <figure>
+            <img src="{{ uri }}" alt="Grad-CAM heatmap for {{ condition }}">
+            <figcaption>{{ condition }}</figcaption>
+          </figure>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
 
     <section class="explanation">
       <h2>Explanation</h2>
