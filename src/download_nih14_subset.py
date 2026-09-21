@@ -31,8 +31,7 @@ def main():
     labels_csv_path = hf_hub_download(
         repo_id=REPO_ID, repo_type="dataset", filename="data/Data_Entry_2017_v2020.csv"
     )
-    labels_df = pd.read_csv(labels_csv_path)
-    labels_by_filename = dict(zip(labels_df["Image Index"], labels_df["Finding Labels"]))
+    labels_df = pd.read_csv(labels_csv_path).set_index("Image Index")
 
     extracted_filenames = []
     for zip_filename in ZIP_FILES:
@@ -61,11 +60,15 @@ def main():
     manifest_rows = []
     missing_labels = 0
     for filename in extracted_filenames:
-        finding_labels = labels_by_filename.get(filename)
-        if finding_labels is None:
+        if filename not in labels_df.index:
             missing_labels += 1
             continue
-        manifest_rows.append({"filename": filename, "labels": finding_labels})
+        row = labels_df.loc[filename]
+        manifest_rows.append({
+            "filename": filename,
+            "patient_id": row["Patient ID"],
+            "labels": row["Finding Labels"],
+        })
 
     manifest_df = pd.DataFrame(manifest_rows)
     manifest_path = OUTPUT_DIR / "labels.csv"
