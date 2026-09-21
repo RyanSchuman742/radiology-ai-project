@@ -95,7 +95,7 @@ def diagnose():
 
     heatmap_image = Image.fromarray(result["heatmap_overlay"])
     explanation = get_explanation(
-        result["predicted_class"], result["confidence"], result["class_probabilities"]
+        result["predicted_class"], result["confidence"], result["class_probabilities"], heatmap_image
     )
 
     return render_template(
