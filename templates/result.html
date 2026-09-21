@@ -9,6 +9,9 @@
   <main>
     <h1>Result</h1>
     <p class="disclaimer">Educational prototype only — not a medical device, not a diagnosis.</p>
+    {% if warning %}
+      <p class="warning">{{ warning }}</p>
+    {% endif %}
 
     <div class="images">
       <figure>

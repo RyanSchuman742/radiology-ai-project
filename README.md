@@ -15,7 +15,9 @@ showing what the model looked at, and a plain-English explanation you can
 use to sanity-check the reasoning.
 
 **Educational prototype — not a medical device, not a diagnosis, not a
-substitute for a radiologist.**
+substitute for a radiologist.** See [MODEL_CARD.md](MODEL_CARD.md) for
+training data, measured accuracy/sensitivity/specificity, and known
+limitations.
 
 ## Stack
 

@@ -25,6 +25,15 @@ h1 {
   color: #ff6b6b;
 }
 
+.warning {
+  background: #3a2f0f;
+  border: 1px solid #f0a500;
+  color: #f0c04a;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
 form {
   display: flex;
   gap: 0.75rem;

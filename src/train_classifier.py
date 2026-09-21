@@ -96,10 +96,16 @@ def build_model(num_classes: int) -> nn.Module:
     return model
 
 
-def run_epoch(model, loader, criterion, optimizer, device, train: bool) -> tuple[float, float]:
+def run_epoch(model, loader, criterion, optimizer, device, train: bool, num_classes: int) -> tuple[float, float, float]:
+    """Returns (loss, accuracy, balanced_accuracy). Balanced accuracy is the
+    mean of per-class recall, which — unlike raw accuracy — isn't dominated
+    by whichever class has more training examples."""
     model.train() if train else model.eval()
 
     total_loss, correct, total = 0.0, 0, 0
+    class_correct = torch.zeros(num_classes)
+    class_total = torch.zeros(num_classes)
+
     with torch.set_grad_enabled(train):
         for images, labels in loader:
             images, labels = images.to(device), labels.to(device)
@@ -114,11 +120,18 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool) -> tuple
                 loss.backward()
                 optimizer.step()
 
+            preds = outputs.argmax(dim=1)
             total_loss += loss.item() * images.size(0)
-            correct += (outputs.argmax(dim=1) == labels).sum().item()
+            correct += (preds == labels).sum().item()
             total += images.size(0)
 
-    return total_loss / total, correct / total
+            for c in range(num_classes):
+                mask = labels == c
+                class_total[c] += mask.sum().item()
+                class_correct[c] += (preds[mask] == c).sum().item()
+
+    balanced_acc = (class_correct / class_total.clamp(min=1)).mean().item()
+    return total_loss / total, correct / total, balanced_acc
 
 
 def main():
@@ -134,29 +147,47 @@ def main():
     test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
     model = build_model(len(class_names)).to(device)
-    criterion = nn.CrossEntropyLoss()
+
+    # The training set is imbalanced (this dataset is ~74% pneumonia, 26%
+    # normal), which biases a plain classifier toward over-predicting the
+    # majority class. Weight the loss inversely to class frequency so both
+    # classes matter equally during training.
+    class_counts = torch.zeros(len(class_names))
+    for _, label in train_ds.samples:
+        class_counts[label] += 1
+    class_weights = (class_counts.sum() / class_counts).to(device)
+    print(f"Class counts: {dict(zip(class_names, class_counts.tolist()))}")
+    print(f"Class weights: {dict(zip(class_names, class_weights.tolist()))}")
+
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-    best_val_acc = 0.0
+    best_val_balanced_acc = 0.0
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
     for epoch in range(1, NUM_EPOCHS + 1):
-        train_loss, train_acc = run_epoch(model, train_loader, criterion, optimizer, device, train=True)
-        val_loss, val_acc = run_epoch(model, val_loader, criterion, optimizer, device, train=False)
+        train_loss, train_acc, train_bal_acc = run_epoch(
+            model, train_loader, criterion, optimizer, device, train=True, num_classes=len(class_names)
+        )
+        val_loss, val_acc, val_bal_acc = run_epoch(
+            model, val_loader, criterion, optimizer, device, train=False, num_classes=len(class_names)
+        )
 
         print(f"Epoch {epoch}/{NUM_EPOCHS} | "
-              f"train_loss={train_loss:.4f} train_acc={train_acc:.4f} | "
-              f"val_loss={val_loss:.4f} val_acc={val_acc:.4f}")
+              f"train_loss={train_loss:.4f} train_acc={train_acc:.4f} train_bal_acc={train_bal_acc:.4f} | "
+              f"val_loss={val_loss:.4f} val_acc={val_acc:.4f} val_bal_acc={val_bal_acc:.4f}")
 
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if val_bal_acc > best_val_balanced_acc:
+            best_val_balanced_acc = val_bal_acc
             torch.save({"model_state": model.state_dict(), "class_names": class_names}, MODEL_PATH)
-            print(f"  Saved new best model (val_acc={val_acc:.4f}) to {MODEL_PATH}")
+            print(f"  Saved new best model (val_bal_acc={val_bal_acc:.4f}) to {MODEL_PATH}")
 
     checkpoint = torch.load(MODEL_PATH, map_location=device)
     model.load_state_dict(checkpoint["model_state"])
-    test_loss, test_acc = run_epoch(model, test_loader, criterion, optimizer, device, train=False)
-    print(f"\nFinal test set: loss={test_loss:.4f} acc={test_acc:.4f}")
+    test_loss, test_acc, test_bal_acc = run_epoch(
+        model, test_loader, criterion, optimizer, device, train=False, num_classes=len(class_names)
+    )
+    print(f"\nFinal test set: loss={test_loss:.4f} acc={test_acc:.4f} balanced_acc={test_bal_acc:.4f}")
 
 
 if __name__ == "__main__":
