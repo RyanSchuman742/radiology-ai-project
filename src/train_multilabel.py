@@ -29,6 +29,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data" / "nih14_subset"
 MODEL_DIR = PROJECT_ROOT / "models"
 MODEL_PATH = MODEL_DIR / "resnet_nih14.pt"
+LATEST_CHECKPOINT_PATH = MODEL_DIR / "resnet_nih14_latest.pt"  # every epoch, for resuming a crashed/interrupted run
 REPORT_PATH = MODEL_DIR / "nih14_eval_report.json"
 
 CONDITIONS = [
@@ -191,21 +192,33 @@ def main():
 
     model = build_model().to(device)
     pos_weight = compute_pos_weight(train_df, device)
-    print(f"Pos weights: {dict(zip(CONDITIONS, pos_weight.tolist()))}")
+    print(f"Pos weights: {dict(zip(CONDITIONS, pos_weight.tolist()))}", flush=True)
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     best_val_auroc = 0.0
+    start_epoch = 1
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    for epoch in range(1, NUM_EPOCHS + 1):
+    # Resume from the last completed epoch if this run was interrupted
+    # (crash, machine slept, etc.) - important for an unattended overnight
+    # run where nobody's there to notice and manually restart it.
+    if LATEST_CHECKPOINT_PATH.exists():
+        checkpoint = torch.load(LATEST_CHECKPOINT_PATH, map_location=device)
+        model.load_state_dict(checkpoint["model_state"])
+        optimizer.load_state_dict(checkpoint["optimizer_state"])
+        best_val_auroc = checkpoint["best_val_auroc"]
+        start_epoch = checkpoint["epoch"] + 1
+        print(f"Resuming from epoch {start_epoch} (best_val_auroc so far: {best_val_auroc:.4f})", flush=True)
+
+    for epoch in range(start_epoch, NUM_EPOCHS + 1):
         train_loss, train_auroc, _, _ = run_epoch(model, train_loader, criterion, optimizer, device, train=True)
         val_loss, val_auroc, _, _ = run_epoch(model, val_loader, criterion, optimizer, device, train=False)
 
         print(f"Epoch {epoch}/{NUM_EPOCHS} | "
               f"train_loss={train_loss:.4f} train_macro_auroc={train_auroc:.4f} | "
-              f"val_loss={val_loss:.4f} val_macro_auroc={val_auroc:.4f}")
+              f"val_loss={val_loss:.4f} val_macro_auroc={val_auroc:.4f}", flush=True)
 
         if val_auroc > best_val_auroc:
             best_val_auroc = val_auroc
@@ -214,7 +227,16 @@ def main():
                 "class_names": CONDITIONS,
                 "decision_threshold": DECISION_THRESHOLD,
             }, MODEL_PATH)
-            print(f"  Saved new best model (val_macro_auroc={val_auroc:.4f}) to {MODEL_PATH}")
+            print(f"  Saved new best model (val_macro_auroc={val_auroc:.4f}) to {MODEL_PATH}", flush=True)
+
+        # Every-epoch checkpoint for resuming, separate from the "best" model
+        # above (which is what the app actually loads for inference).
+        torch.save({
+            "model_state": model.state_dict(),
+            "optimizer_state": optimizer.state_dict(),
+            "epoch": epoch,
+            "best_val_auroc": best_val_auroc,
+        }, LATEST_CHECKPOINT_PATH)
 
     checkpoint = torch.load(MODEL_PATH, map_location=device)
     model.load_state_dict(checkpoint["model_state"])

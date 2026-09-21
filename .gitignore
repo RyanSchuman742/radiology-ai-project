@@ -17,5 +17,8 @@ venv/
 # Logs
 *.log
 
+# Resume checkpoints (includes optimizer state, large + regenerated every epoch)
+models/*_latest.pt
+
 # OS
 .DS_Store
