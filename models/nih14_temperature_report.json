@@ -1,0 +1,97 @@
+{
+  "temperatures": {
+    "Atelectasis": 1.4649713983072856,
+    "Cardiomegaly": 1.1623224686798523,
+    "Consolidation": 0.9221978823334327,
+    "Edema": 1.3354515629298989,
+    "Effusion": 1.0353218432956621,
+    "Emphysema": 1.2173827277396614,
+    "Fibrosis": 1.2458833642950082,
+    "Hernia": 1.059560179277616,
+    "Infiltration": 0.8603464416684504,
+    "Mass": 0.9884959046625583,
+    "Nodule": 0.8214343584919426,
+    "Pleural_Thickening": 1.0843659686896103,
+    "Pneumonia": 0.9221978823334327,
+    "Pneumothorax": 1.1895340673703196
+  },
+  "expected_calibration_error": {
+    "Atelectasis": {
+      "raw": 0.31772470112149614,
+      "scaled": 0.33242572683779564
+    },
+    "Cardiomegaly": {
+      "raw": 0.13093736440819892,
+      "scaled": 0.14101466320294925
+    },
+    "Consolidation": {
+      "raw": 0.26472775171372115,
+      "scaled": 0.25732425790673985
+    },
+    "Edema": {
+      "raw": 0.1567672829112485,
+      "scaled": 0.17728654518227577
+    },
+    "Effusion": {
+      "raw": 0.1937800649524884,
+      "scaled": 0.19611893130399052
+    },
+    "Emphysema": {
+      "raw": 0.14964827867696176,
+      "scaled": 0.1664672418143472
+    },
+    "Fibrosis": {
+      "raw": 0.24542197105073713,
+      "scaled": 0.2618104494883875
+    },
+    "Hernia": {
+      "raw": 0.014652517896870582,
+      "scaled": 0.015738093538520948
+    },
+    "Infiltration": {
+      "raw": 0.24507698338602968,
+      "scaled": 0.23480251493037402
+    },
+    "Mass": {
+      "raw": 0.20615834462830582,
+      "scaled": 0.20490221968051558
+    },
+    "Nodule": {
+      "raw": 0.2823790774271479,
+      "scaled": 0.2615525279964325
+    },
+    "Pleural_Thickening": {
+      "raw": 0.2791066361914366,
+      "scaled": 0.2873236136290831
+    },
+    "Pneumonia": {
+      "raw": 0.25246686250001105,
+      "scaled": 0.24464350031967572
+    },
+    "Pneumothorax": {
+      "raw": 0.19171930799603337,
+      "scaled": 0.20790549210947157
+    }
+  },
+  "thresholds_after_temperature_scaling": {
+    "Atelectasis": 0.5555447479980332,
+    "Cardiomegaly": 0.6213475072293512,
+    "Consolidation": 0.5767067815610367,
+    "Edema": 0.5847924179027001,
+    "Effusion": 0.616610837881593,
+    "Emphysema": 0.6612441007027507,
+    "Fibrosis": 0.544251698210534,
+    "Hernia": 0.85,
+    "Infiltration": 0.5426701775568891,
+    "Mass": 0.5984249589660602,
+    "Nodule": 0.5607669612037327,
+    "Pleural_Thickening": 0.5604059936888406,
+    "Pneumonia": 0.5726362573072586,
+    "Pneumothorax": 0.5776063562831428
+  },
+  "healthy_false_positive_rate": {
+    "flat_0.5": 0.6232550221314266,
+    "threshold_only": 0.5333673816819884,
+    "temperature_plus_threshold": 0.5333673816819884
+  }
+}

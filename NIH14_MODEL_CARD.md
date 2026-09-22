@@ -135,6 +135,24 @@ runs that this looks like a genuinely harder class for this architecture
 (possibly due to diffuse, poorly-bounded visual presentation), not sampling
 noise.
 
+## Tried and rejected: temperature scaling
+
+After threshold calibration still left a 53.3% false-positive rate on
+healthy images, tried per-class temperature scaling (`src/temperature_scale.py`,
+Guo et al. 2017) - rescaling each class's logit by a learned constant
+before the sigmoid, to fix the probability *values* rather than the
+decision threshold. **Result: no improvement.** Healthy-image false-positive
+rate was unchanged (53.3% -> 53.3%), and Expected Calibration Error got
+*worse* for most classes (e.g. Atelectasis 0.318->0.332, Pneumothorax
+0.192->0.208). Several classes' learned temperatures came out below 1
+(Nodule 0.821, Infiltration 0.860), meaning those classes were actually
+*under*confident on validation data, not overconfident - contradicting the
+assumption that `pos_weight` uniformly inflates every class's probabilities.
+This means the miscalibration is more complex than a single per-class
+scalar can correct; full report in `models/nih14_temperature_report.json`.
+Not deployed - the model in production is the threshold-only-calibrated
+version, unaffected by this experiment.
+
 ## Known limitations
 
 - **Still flags over half of genuinely healthy images with at least one
