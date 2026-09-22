@@ -10,21 +10,24 @@ pinned: false
 
 # Chest X-ray Interpretability Tool
 
-Upload a chest X-ray, get back a predicted diagnosis, a Grad-CAM heatmap
-showing what the model looked at, and a plain-English explanation you can
-use to sanity-check the reasoning.
+Upload a chest X-ray, get back predicted findings across 14 conditions, a
+color-coded Grad-CAM heatmap showing what the model looked at for each one,
+and a plain-English explanation you can use to sanity-check the reasoning.
 
 **Educational prototype — not a medical device, not a diagnosis, not a
-substitute for a radiologist.** See [MODEL_CARD.md](MODEL_CARD.md) for
-training data, measured accuracy/sensitivity/specificity, and known
-limitations.
+substitute for a radiologist.** See [NIH14_MODEL_CARD.md](NIH14_MODEL_CARD.md)
+(current, multi-label model) or [MODEL_CARD.md](MODEL_CARD.md) (earlier
+binary pneumonia/normal model) for training data, measured performance, and
+known limitations.
 
 ## Stack
 
-- PyTorch (ResNet50, fine-tuned, MPS/CPU) for classification
-- `pytorch-grad-cam` for the heatmap overlay
+- PyTorch (ResNet50, fine-tuned, MPS/CPU), multi-label (`BCEWithLogitsLoss`)
+- `pytorch-grad-cam` for per-condition heatmaps, composited into one
+  color-coded image
 - Flask for the web app
-- Anthropic API (Claude) for the explanation layer
+- Anthropic API (Claude, vision) for the explanation layer - reads the
+  actual heatmap image, not just the numbers
 
 ## Local setup
 
@@ -34,11 +37,12 @@ pip install -r requirements.txt
 cp .env.example .env   # then fill in ANTHROPIC_API_KEY
 ```
 
-Train the classifier (downloads the dataset first if you haven't):
+Train the classifier (downloads the full NIH-14 dataset first if you
+haven't - ~42GB, run overnight):
 
 ```bash
-python src/download_pneumonia_dataset.py
-python src/train_classifier.py
+python src/download_nih14.py
+python src/train_multilabel.py
 ```
 
 Run the app:
@@ -47,26 +51,36 @@ Run the app:
 python app.py
 ```
 
-## Deploying (Railway)
+## Deploying (Google Cloud Run)
 
-1. Push this repo to GitHub.
-2. In Railway, create a new project from that GitHub repo.
-3. Set the `ANTHROPIC_API_KEY` environment variable in Railway's dashboard.
-4. Railway will detect the `Procfile` and run `gunicorn app:app`.
+```bash
+gcloud run deploy radiology-ai-project \
+  --source . \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-secrets=ANTHROPIC_API_KEY=anthropic-api-key:latest \
+  --memory 2Gi --cpu 2 --min-instances 0 --max-instances 3 --timeout 300
+```
 
-The trained model checkpoint (`models/resnet_pneumonia.pt`) is committed to
-the repo so no training step is needed at deploy time.
+The trained model checkpoint (`models/resnet_nih14.pt`) is committed to the
+repo so no training step is needed at deploy time. `ANTHROPIC_API_KEY` is
+stored in Secret Manager, never in source.
 
 ## Data attribution
 
-Training data: Kermany, D.; Zhang, K.; Goldbaum, M. (2018), "Labeled Optical
-Coherence Tomography (OCT) and Chest X-Ray Images for Classification",
-mirrored at
-[hf-vision/chest-xray-pneumonia](https://huggingface.co/datasets/hf-vision/chest-xray-pneumonia)
-(CC-BY-4.0). Not included in this repo — run
-`src/download_pneumonia_dataset.py` to fetch it.
+Current model trained on [NIH ChestX-ray14](https://huggingface.co/datasets/alkzar90/NIH-Chest-X-ray-dataset)
+(Wang et al., 2017), public domain, NIH Clinical Center. Not included in
+this repo — run `src/download_nih14.py` to fetch it (~42GB).
+
+Earlier binary model trained on the Kermany et al. (2018) pediatric
+pneumonia dataset (CC-BY-4.0) - see `src/download_pneumonia_dataset.py`.
 
 ## Roadmap
 
-- Currently binary: Normal vs. Pneumonia. Plan to expand to more conditions
-  (e.g. via the NIH ChestX-ray14 dataset) once the pipeline is validated.
+- **Done:** binary (Normal vs. Pneumonia) → multi-label, 14 conditions
+  (NIH ChestX-ray14), per-condition color-coded Grad-CAM heatmaps
+- Researched, not yet built: calibrated uncertainty (conformal prediction)
+  instead of raw sigmoid confidence; CXR Foundation embeddings instead of
+  ImageNet pretraining; prior-scan comparison; symptom/clinical-context
+  input alongside the image
+- Longer term: additional imaging modalities beyond chest X-ray

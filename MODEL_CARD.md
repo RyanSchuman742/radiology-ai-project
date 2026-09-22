@@ -66,9 +66,10 @@ gets flagged as pneumonia. This is a known limitation, not a hidden one.
 - No external validation set from a different institution
 - Grad-CAM shows correlation with the prediction, not a guarantee that the
   highlighted region is clinically meaningful
-- The explanation layer (Claude) never sees the image — it only reasons
-  over the numbers this model already produced, so it cannot catch a case
-  where the model's number is wrong
+- Superseded by the multi-label NIH-14 model as of the app's live deployment
+  - see [NIH14_MODEL_CARD.md](NIH14_MODEL_CARD.md). This binary model's code
+  paths (`src/gradcam.py`, `src/explain.py`) are kept for reference but are
+  no longer wired into `app.py`.
 
 ## Intended use
 
