@@ -1,0 +1,19 @@
+{
+  "txv_weights": "densenet121-res224-all",
+  "thresholds": {
+    "Atelectasis": 0.516925573348999,
+    "Cardiomegaly": 0.4761950969696045,
+    "Consolidation": 0.5493343472480774,
+    "Edema": 0.4664131999015808,
+    "Effusion": 0.5496852397918701,
+    "Emphysema": 0.55943763256073,
+    "Fibrosis": 0.5349833965301514,
+    "Hernia": 0.8880871534347534,
+    "Infiltration": 0.5400577783584595,
+    "Mass": 0.5956282615661621,
+    "Nodule": 0.5242143869400024,
+    "Pleural_Thickening": 0.5039836764335632,
+    "Pneumonia": 0.40839213132858276,
+    "Pneumothorax": 0.5322072505950928
+  }
+}

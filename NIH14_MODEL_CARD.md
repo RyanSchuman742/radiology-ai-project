@@ -22,7 +22,10 @@ Pneumonia, Pneumothorax. ("No Finding" is implicit - a scan with none of the
 - Trained on Apple Silicon (MPS backend), Adam optimizer, lr=1e-4
 - Loss: `BCEWithLogitsLoss` with per-class `pos_weight` (independent sigmoid
   per class, not softmax - multiple findings can be true at once)
-- Decision threshold: 0.5 per class
+- **Deployed predictions are an ensemble** - the average of this ResNet50 and
+  TorchXRayVision's DenseNet121, with per-class thresholds calibrated for the
+  averaged output. See "Ensemble with TorchXRayVision" below. Grad-CAM
+  heatmaps come from this ResNet50 only.
 
 ## Training data
 
@@ -153,12 +156,58 @@ scalar can correct; full report in `models/nih14_temperature_report.json`.
 Not deployed - the model in production is the threshold-only-calibrated
 version, unaffected by this experiment.
 
+## Ensemble with TorchXRayVision (deployed)
+
+Averages this model's probabilities with those of TorchXRayVision's
+`densenet121-res224-all` (Cohen et al.), a published model trained on
+several combined public chest X-ray datasets (NIH, PadChest, CheXpert,
+MIMIC-CXR, and others). Its 18 outputs include all 14 of ours under
+identical names; the other 4 are ignored. Evaluation: `src/evaluate_ensemble.py`,
+full numbers in `models/nih14_ensemble_report.json`.
+
+**Contamination caveat:** TXV's weights were trained partly on NIH
+ChestX-ray14, so it has likely seen some of our "held-out" NIH test images.
+The NIH test numbers below are therefore optimistic for TXV and the
+ensemble. The **Kermany pediatric NORMAL set** (1,583 healthy X-rays from a
+different hospital, trained on by neither model) is the clean check - and
+the closest match to the original bug report, which was healthy X-rays from
+outside the training data being flagged.
+
+| | Ours alone (previous) | TXV alone | Ensemble (deployed) |
+|---|---|---|---|
+| Healthy *external* X-rays with >=1 false positive | 79.3% | 94.8% | **53.1%** |
+| Healthy NIH test X-rays with >=1 false positive | 53.3% | 86.9% | **46.6%** |
+| NIH test macro AUROC | 0.826 | 0.775 | **0.834** |
+
+Each model alone is poor on outside images, but they make different
+mistakes, so averaging cancels many of them out. The external number also
+revealed that our model alone was much worse on outside images (79%) than
+the 53% measured on NIH data suggested.
+
+**Thresholds match our model's existing sensitivity.** A first version used
+the same conservative search as `calibrate_thresholds.py` and cut false
+positives slightly more (50.7% external), but dropped Pneumonia recall from
+46% to 33%. Since the ensemble *ranks* Pneumonia cases better than our
+model does (AUROC 0.733 vs 0.705), that drop was a threshold choice, not a
+weaker model - so each class's threshold is instead set, on the validation
+set, to catch at least as many real cases as our model alone did. Test-set
+recall ends up within about 1-4 points of the previous model for every
+class except:
+
+- **Hernia: 60% -> 40%** (9 -> 6 of 15 test cases). With 15 cases this is
+  mostly noise, and tuning against the test set to "fix" it would be
+  cheating. Unresolved.
+- Emphysema: 77% -> 74%.
+
 ## Known limitations
 
-- **Still flags over half of genuinely healthy images with at least one
-  false positive (53.3%), even after threshold calibration.** See
-  "Decision threshold calibration" above - this is a known, unresolved
-  limitation, not a hidden one.
+- **Still flags about half of genuinely healthy X-rays with at least one
+  false positive** - 53.1% on external healthy images, 46.6% on NIH, even
+  with the ensemble and calibrated thresholds. Down from 79.3% / 53.3% for
+  the single model, but a known, unresolved limitation, not a hidden one.
+- The external healthy check is pediatric (Kermany), while training data is
+  mostly adult - some of the external false-positive rate may be age-related
+  domain shift rather than general over-flagging.
 - Label noise from NLP-mined (not radiologist-verified) ground truth
 - Single-institution data source, no external validation set
 - Overfitting past epoch ~11 - the model would likely benefit from

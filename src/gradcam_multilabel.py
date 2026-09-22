@@ -1,21 +1,34 @@
-"""Phase 2: multi-label Grad-CAM. Instead of one heatmap for "the"
-prediction, computes a separate Grad-CAM pass per condition the model
-flags as present, then composites them into one image where each
-condition gets its own fixed color - so a scan with multiple findings
-shows multiple color-coded regions at once, with a legend.
+"""Phase 2: multi-label prediction + Grad-CAM.
+
+Predictions are an ensemble: the average of our fine-tuned ResNet50 and
+TorchXRayVision's DenseNet121 trained on several combined public datasets
+(see src/evaluate_ensemble.py for why - it cut false positives on outside
+healthy X-rays from 79% to 53% at unchanged sensitivity). Grad-CAM comes
+from our ResNet50 only.
+
+Instead of one heatmap for "the" prediction, computes a separate Grad-CAM
+pass per condition flagged as present, then composites them into one image
+where each condition gets its own fixed color - so a scan with multiple
+findings shows multiple color-coded regions at once, with a legend.
 """
 
+import json
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
 import torch
+import torchvision
+import torchxrayvision as xrv
 from PIL import Image
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from torchvision import models, transforms
 from torch import nn
 
-MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "resnet_nih14.pt"
+MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
+MODEL_PATH = MODELS_DIR / "resnet_nih14.pt"
+ENSEMBLE_CONFIG_PATH = MODELS_DIR / "ensemble_config.json"
 IMAGE_SIZE = 224
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
@@ -42,39 +55,51 @@ CONDITION_COLORS = {
 }
 
 
-def load_model(device: torch.device):
+OUR_TRANSFORM = transforms.Compose([
+    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+    transforms.ToTensor(),
+    transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+])
+TXV_TRANSFORM = torchvision.transforms.Compose([
+    xrv.datasets.XRayCenterCrop(),
+    xrv.datasets.XRayResizer(224),
+])
+
+
+@lru_cache(maxsize=1)
+def load_models(device_type: str):
+    """Loaded once per process, not per request."""
+    device = torch.device(device_type)
     checkpoint = torch.load(MODEL_PATH, map_location=device)
     class_names = checkpoint["class_names"]
 
-    # Per-class calibrated thresholds (see src/calibrate_thresholds.py) -
-    # a flat 0.5 doesn't mean the same thing for every class once
-    # per-class pos_weight has corrected for imbalance. Falls back to a
-    # flat threshold if the checkpoint predates calibration.
-    default_threshold = checkpoint.get("decision_threshold", 0.5)
-    decision_thresholds = checkpoint.get(
-        "decision_thresholds", {name: default_threshold for name in class_names}
-    )
+    ours = models.resnet50(weights=None)
+    ours.fc = nn.Linear(ours.fc.in_features, len(class_names))
+    ours.load_state_dict(checkpoint["model_state"])
+    ours.to(device).eval()
 
-    model = models.resnet50(weights=None)
-    model.fc = nn.Linear(model.fc.in_features, len(class_names))
-    model.load_state_dict(checkpoint["model_state"])
-    model.to(device).eval()
+    # Thresholds are calibrated for the ensemble's averaged output, not for
+    # either model alone - see src/evaluate_ensemble.py.
+    config = json.loads(ENSEMBLE_CONFIG_PATH.read_text())
+    txv = xrv.models.DenseNet(weights=config["txv_weights"]).to(device).eval()
+    txv_indices = [txv.pathologies.index(c) for c in class_names]
 
-    return model, class_names, decision_thresholds
+    return ours, txv, txv_indices, class_names, config["thresholds"]
 
 
-def preprocess(image: Image.Image) -> tuple[torch.Tensor, np.ndarray]:
-    """Returns (normalized tensor for the model, resized RGB float array [0,1] for overlay)."""
-    resized = image.convert("RGB").resize((IMAGE_SIZE, IMAGE_SIZE))
-    rgb_float = np.array(resized).astype(np.float32) / 255.0
+def preprocess(image: Image.Image) -> tuple[torch.Tensor, torch.Tensor, np.ndarray]:
+    """Returns (our model's input, TXV's input, resized RGB float array [0,1]
+    for the overlay). Both model inputs match evaluate_ensemble.py exactly,
+    since the thresholds were calibrated through that pipeline."""
+    rgb = image.convert("RGB")
+    ours_tensor = OUR_TRANSFORM(rgb).unsqueeze(0)
 
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
-    ])
-    tensor = transform(resized).unsqueeze(0)
+    gray = np.array(image.convert("L")).astype(np.float32)
+    gray = xrv.utils.normalize(gray, 255)[None, ...]
+    txv_tensor = torch.from_numpy(TXV_TRANSFORM(gray)).float().unsqueeze(0)
 
-    return tensor, rgb_float
+    rgb_float = np.array(rgb.resize((IMAGE_SIZE, IMAGE_SIZE))).astype(np.float32) / 255.0
+    return ours_tensor, txv_tensor, rgb_float
 
 
 def normalize_heatmap(cam: np.ndarray) -> np.ndarray:
@@ -122,15 +147,16 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
     (multi-color composite, uint8 RGB), and legend (condition -> "#rrggbb").
     """
     device = device or torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-    model, class_names, decision_thresholds = load_model(device)
+    model, txv, txv_indices, class_names, decision_thresholds = load_models(str(device))
 
     image = Image.open(image_path)
-    input_tensor, rgb_float = preprocess(image)
+    input_tensor, txv_tensor, rgb_float = preprocess(image)
     input_tensor = input_tensor.to(device)
 
     with torch.no_grad():
-        logits = model(input_tensor)
-        probs = torch.sigmoid(logits)[0].cpu().numpy()
+        ours_probs = torch.sigmoid(model(input_tensor))[0].cpu().numpy()
+        txv_probs = txv(txv_tensor.to(device))[0, txv_indices].cpu().numpy()
+    probs = (ours_probs + txv_probs) / 2
 
     all_probabilities = dict(zip(class_names, probs.tolist()))
     findings = sorted(

@@ -22,7 +22,9 @@ known limitations.
 
 ## Stack
 
-- PyTorch (ResNet50, fine-tuned, MPS/CPU), multi-label (`BCEWithLogitsLoss`)
+- PyTorch (ResNet50, fine-tuned, MPS/CPU), multi-label (`BCEWithLogitsLoss`),
+  ensembled with [TorchXRayVision](https://github.com/mlmed/torchxrayvision)'s
+  multi-dataset DenseNet121 for predictions
 - `pytorch-grad-cam` for per-condition heatmaps, composited into one
   color-coded image
 - Flask for the web app

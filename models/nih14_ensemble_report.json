@@ -1,0 +1,152 @@
+{
+  "caveat": "TXV 'all' weights were trained on NIH ChestX-ray14 among other datasets; NIH test numbers for txv/ensemble are optimistic. Kermany NORMAL is the uncontaminated check.",
+  "nih_test_macro_auroc": {
+    "ours": 0.8259048155627757,
+    "txv": 0.7753775329614789,
+    "ensemble": 0.8343430759546128
+  },
+  "nih_test_per_class_auroc": {
+    "ours": {
+      "Atelectasis": 0.8073536409048421,
+      "Cardiomegaly": 0.9169545764030735,
+      "Consolidation": 0.8193802023359867,
+      "Edema": 0.8981179422835635,
+      "Effusion": 0.8704271466078393,
+      "Emphysema": 0.931217750257998,
+      "Fibrosis": 0.7674674886812446,
+      "Hernia": 0.8974071256498036,
+      "Infiltration": 0.7071118439807689,
+      "Mass": 0.8201580262555873,
+      "Nodule": 0.7606247862588932,
+      "Pleural_Thickening": 0.7978537903298505,
+      "Pneumonia": 0.704755596919991,
+      "Pneumothorax": 0.863837501009418
+    },
+    "txv": {
+      "Atelectasis": 0.7818101430897008,
+      "Cardiomegaly": 0.876231884057971,
+      "Consolidation": 0.8042379163027698,
+      "Edema": 0.8684523978494014,
+      "Effusion": 0.8467472696484332,
+      "Emphysema": 0.6836655056759545,
+      "Fibrosis": 0.6899043123655396,
+      "Hernia": 0.9399074426271079,
+      "Infiltration": 0.6798539665760034,
+      "Mass": 0.7730400696864113,
+      "Nodule": 0.683112624019262,
+      "Pleural_Thickening": 0.768826135105205,
+      "Pneumonia": 0.7134265346287624,
+      "Pneumothorax": 0.7460692598281814
+    },
+    "ensemble": {
+      "Atelectasis": 0.8145240507007631,
+      "Cardiomegaly": 0.9199535064682425,
+      "Consolidation": 0.8292498066942209,
+      "Edema": 0.9029988020688441,
+      "Effusion": 0.8699021462194533,
+      "Emphysema": 0.9111117726442802,
+      "Fibrosis": 0.7776020293484892,
+      "Hernia": 0.9528591352859135,
+      "Infiltration": 0.71147930301238,
+      "Mass": 0.8250899676204554,
+      "Nodule": 0.7568411980176687,
+      "Pleural_Thickening": 0.8140732449897977,
+      "Pneumonia": 0.7325263985529014,
+      "Pneumothorax": 0.8625917017411683
+    }
+  },
+  "nih_test_per_class_recall": {
+    "ours": {
+      "Atelectasis": 0.7300085984522786,
+      "Cardiomegaly": 0.684,
+      "Consolidation": 0.6440281030444965,
+      "Edema": 0.7294117647058823,
+      "Effusion": 0.6883593033913841,
+      "Emphysema": 0.7743589743589744,
+      "Fibrosis": 0.5733333333333334,
+      "Hernia": 0.6,
+      "Infiltration": 0.46792035398230086,
+      "Mass": 0.5742793791574279,
+      "Nodule": 0.5179738562091504,
+      "Pleural_Thickening": 0.622895622895623,
+      "Pneumonia": 0.46153846153846156,
+      "Pneumothorax": 0.7002237136465325
+    },
+    "ensemble": {
+      "Atelectasis": 0.6921754084264833,
+      "Cardiomegaly": 0.62,
+      "Consolidation": 0.6557377049180327,
+      "Edema": 0.6647058823529411,
+      "Effusion": 0.6681943171402384,
+      "Emphysema": 0.717948717948718,
+      "Fibrosis": 0.56,
+      "Hernia": 0.4,
+      "Infiltration": 0.49668141592920356,
+      "Mass": 0.614190687361419,
+      "Nodule": 0.5130718954248366,
+      "Pleural_Thickening": 0.5959595959595959,
+      "Pneumonia": 0.3333333333333333,
+      "Pneumothorax": 0.6666666666666666
+    },
+    "ensemble_matched": {
+      "Atelectasis": 0.7317282889079966,
+      "Cardiomegaly": 0.676,
+      "Consolidation": 0.6440281030444965,
+      "Edema": 0.7176470588235294,
+      "Effusion": 0.7140238313473877,
+      "Emphysema": 0.7384615384615385,
+      "Fibrosis": 0.56,
+      "Hernia": 0.4,
+      "Infiltration": 0.46238938053097345,
+      "Mass": 0.5676274944567627,
+      "Nodule": 0.5261437908496732,
+      "Pleural_Thickening": 0.6094276094276094,
+      "Pneumonia": 0.452991452991453,
+      "Pneumothorax": 0.6912751677852349
+    }
+  },
+  "nih_test_healthy_false_positive_rate": {
+    "ours": 0.5333673816819884,
+    "txv": 0.869424582907729,
+    "ensemble": 0.4542049710589036,
+    "ensemble_matched": 0.4659516513449098
+  },
+  "kermany_normal_false_positive_rate": {
+    "ours": 0.7927984838913456,
+    "txv": 0.9475679090334808,
+    "ensemble": 0.50726468730259,
+    "ensemble_matched": 0.5312697409981049
+  },
+  "ensemble_thresholds": {
+    "Atelectasis": 0.5433556437492371,
+    "Cardiomegaly": 0.5428231358528137,
+    "Consolidation": 0.5364593267440796,
+    "Edema": 0.5230215191841125,
+    "Effusion": 0.5878596305847168,
+    "Emphysema": 0.5673842430114746,
+    "Fibrosis": 0.5382707715034485,
+    "Hernia": 0.85,
+    "Infiltration": 0.5244120359420776,
+    "Mass": 0.5574520826339722,
+    "Nodule": 0.5305904150009155,
+    "Pleural_Thickening": 0.5273981094360352,
+    "Pneumonia": 0.5170570611953735,
+    "Pneumothorax": 0.5601989030838013
+  },
+  "ensemble_matched_recall_thresholds": {
+    "Atelectasis": 0.516925573348999,
+    "Cardiomegaly": 0.4761950969696045,
+    "Consolidation": 0.5493343472480774,
+    "Edema": 0.4664131999015808,
+    "Effusion": 0.5496852397918701,
+    "Emphysema": 0.55943763256073,
+    "Fibrosis": 0.5349833965301514,
+    "Hernia": 0.8880871534347534,
+    "Infiltration": 0.5400577783584595,
+    "Mass": 0.5956282615661621,
+    "Nodule": 0.5242143869400024,
+    "Pleural_Thickening": 0.5039836764335632,
+    "Pneumonia": 0.40839213132858276,
+    "Pneumothorax": 0.5322072505950928
+  }
+}
