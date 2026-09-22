@@ -1,13 +1,12 @@
-"""Download a subset of the NIH ChestX-ray14 dataset for Phase 2 prototyping.
-
-Pulls the first N zip archives (not the full 12) from the official NIH
-release mirrored on Hugging Face, extracts them, and builds a manifest CSV
-joining each extracted image to its multi-label findings from the official
+"""Download the NIH ChestX-ray14 dataset from the official release mirrored
+on Hugging Face, extract it, and build a manifest CSV joining each image to
+its multi-label findings and patient ID from the official
 Data_Entry_2017_v2020.csv metadata.
 
-This is a prototyping subset, not the final training set - class balance
-across the 14 conditions is whatever naturally falls out of these zips
-(NIH's official chunking is roughly patient-ID order, not randomized).
+Downloads all 12 image archives (~42GB, ~112k images) by default. Already-
+downloaded/extracted files are skipped, so re-running after the Phase 2
+prototyping subset (images_001-002) safely fills in the rest rather than
+re-downloading them.
 """
 
 import zipfile
@@ -17,7 +16,7 @@ import pandas as pd
 from huggingface_hub import hf_hub_download
 
 REPO_ID = "alkzar90/NIH-Chest-X-ray-dataset"
-ZIP_FILES = ["data/images/images_001.zip", "data/images/images_002.zip"]
+ZIP_FILES = [f"data/images/images_{i:03d}.zip" for i in range(1, 13)]
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "data" / "nih14_subset"
