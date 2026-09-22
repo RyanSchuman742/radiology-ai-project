@@ -105,9 +105,19 @@ def build_model() -> nn.Module:
     return model
 
 
+POS_WEIGHT_DAMPENING = 0.5  # 1.0 = raw inverse frequency (was too aggressive - see below), 0.0 = no weighting
+
+
 def compute_pos_weight(train_df: pd.DataFrame, device: torch.device) -> torch.Tensor:
-    """Inverse-frequency weight per class for BCEWithLogitsLoss's pos_weight,
-    same idea as Phase 1's class weighting but per-class instead of binary."""
+    """Per-class weight for BCEWithLogitsLoss's pos_weight, same idea as
+    Phase 1's class weighting but per-class instead of binary.
+
+    Raw inverse-frequency weighting (Hernia: ~478x) was too aggressive -
+    it's the prime suspect behind the first trained model flagging 62% of
+    genuinely healthy X-rays with a false-positive finding at the standard
+    0.5 threshold (see NIH14_MODEL_CARD.md). Dampened with a sqrt (exponent
+    0.5): still weights rare classes much more than common ones, but Hernia
+    drops to ~22x instead of ~478x."""
     pos_counts = torch.zeros(len(CONDITIONS))
     for labels_str in train_df["labels"]:
         present = set(labels_str.split("|"))
@@ -117,7 +127,8 @@ def compute_pos_weight(train_df: pd.DataFrame, device: torch.device) -> torch.Te
 
     total = len(train_df)
     neg_counts = total - pos_counts
-    pos_weight = (neg_counts / pos_counts.clamp(min=1)).to(device)
+    raw_pos_weight = neg_counts / pos_counts.clamp(min=1)
+    pos_weight = raw_pos_weight.pow(POS_WEIGHT_DAMPENING).to(device)
     return pos_weight
 
 
