@@ -83,6 +83,52 @@ For context, the original CheXNet paper (Rajpurkar et al., 2017) reported a
 mean AUROC of ~0.841 on this same dataset. Full per-class precision/recall/F1
 is in `models/nih14_eval_report.json` (regenerate with `src/train_multilabel.py`).
 
+## Decision threshold calibration
+
+AUROC measures ranking quality, not what happens at the actual decision
+threshold used to show a finding. With a flat 0.5 threshold, **62.3% of
+genuinely healthy (No Finding) test images got at least one false-positive
+finding flagged** - a real problem reported after trying the deployed app
+on outside images, not just a dataset quirk. Root cause: `pos_weight` in
+the loss function (needed to handle the severe class imbalance - Hernia's
+weight was ~478x) inflates predicted probabilities across the board, so 0.5
+stopped meaning the same thing for every class.
+
+`src/calibrate_thresholds.py` finds a per-class threshold on the validation
+set (never the test set) that only ever raises the threshold above 0.5, and
+only where doing so keeps recall within 90% of its value at 0.5 - i.e. it
+only takes precision gains that don't meaningfully cost sensitivity. Two
+more aggressive approaches were tried and rejected first: maximizing F1
+let some classes' recall collapse below 10% (Pneumonia: 50%->6%) chasing
+precision; a flat 75%-recall floor forced already-hard-to-separate classes
+*below* 0.5, making the false-positive rate worse (62%->80%), not better.
+
+**Result: 53.3% of healthy test images still get flagged (down from 62.3%),
+and every class's precision improved with only a modest recall cost
+(typically 4-9 points).** This is a real but limited fix. The residual
+53% false-positive rate reflects a genuine limitation of the current
+model's probability separation for several classes - training-level fixes
+(temperature scaling, revisiting how aggressively `pos_weight` corrects
+for imbalance, more regularization) would likely help further; post-hoc
+thresholding alone can't fully solve it.
+
+| Condition | Threshold | Recall (0.5 -> calibrated) | Precision (0.5 -> calibrated) |
+|---|---|---|---|
+| Hernia | 0.850 | 0.600 -> 0.600 | 0.093 -> 0.188 |
+| Emphysema | 0.693 | 0.815 -> 0.774 | 0.124 -> 0.182 |
+| Cardiomegaly | 0.640 | 0.764 -> 0.684 | 0.154 -> 0.198 |
+| Effusion | 0.621 | 0.778 -> 0.688 | 0.311 -> 0.366 |
+| Edema | 0.612 | 0.782 -> 0.729 | 0.089 -> 0.106 |
+| Pneumothorax | 0.592 | 0.745 -> 0.700 | 0.176 -> 0.204 |
+| Atelectasis | 0.581 | 0.810 -> 0.730 | 0.227 -> 0.255 |
+| Mass | 0.597 | 0.643 -> 0.574 | 0.166 -> 0.190 |
+| Consolidation | 0.571 | 0.721 -> 0.644 | 0.126 -> 0.141 |
+| Pleural_Thickening | 0.565 | 0.653 -> 0.623 | 0.088 -> 0.101 |
+| Pneumonia | 0.567 | 0.504 -> 0.462 | 0.032 -> 0.038 |
+| Fibrosis | 0.555 | 0.613 -> 0.573 | 0.042 -> 0.045 |
+| Nodule | 0.550 | 0.585 -> 0.518 | 0.159 -> 0.176 |
+| Infiltration | 0.537 | 0.518 -> 0.468 | 0.322 -> 0.352 |
+
 **Pneumonia and Infiltration are the weakest classes in both this run and an
 earlier subset-only run** - consistent enough across two independent training
 runs that this looks like a genuinely harder class for this architecture
@@ -91,6 +137,10 @@ noise.
 
 ## Known limitations
 
+- **Still flags over half of genuinely healthy images with at least one
+  false positive (53.3%), even after threshold calibration.** See
+  "Decision threshold calibration" above - this is a known, unresolved
+  limitation, not a hidden one.
 - Label noise from NLP-mined (not radiologist-verified) ground truth
 - Single-institution data source, no external validation set
 - Overfitting past epoch ~11 - the model would likely benefit from

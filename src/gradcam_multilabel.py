@@ -45,14 +45,22 @@ CONDITION_COLORS = {
 def load_model(device: torch.device):
     checkpoint = torch.load(MODEL_PATH, map_location=device)
     class_names = checkpoint["class_names"]
-    decision_threshold = checkpoint.get("decision_threshold", 0.5)
+
+    # Per-class calibrated thresholds (see src/calibrate_thresholds.py) -
+    # a flat 0.5 doesn't mean the same thing for every class once
+    # per-class pos_weight has corrected for imbalance. Falls back to a
+    # flat threshold if the checkpoint predates calibration.
+    default_threshold = checkpoint.get("decision_threshold", 0.5)
+    decision_thresholds = checkpoint.get(
+        "decision_thresholds", {name: default_threshold for name in class_names}
+    )
 
     model = models.resnet50(weights=None)
     model.fc = nn.Linear(model.fc.in_features, len(class_names))
     model.load_state_dict(checkpoint["model_state"])
     model.to(device).eval()
 
-    return model, class_names, decision_threshold
+    return model, class_names, decision_thresholds
 
 
 def preprocess(image: Image.Image) -> tuple[torch.Tensor, np.ndarray]:
@@ -114,7 +122,7 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
     (multi-color composite, uint8 RGB), and legend (condition -> "#rrggbb").
     """
     device = device or torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-    model, class_names, decision_threshold = load_model(device)
+    model, class_names, decision_thresholds = load_model(device)
 
     image = Image.open(image_path)
     input_tensor, rgb_float = preprocess(image)
@@ -126,7 +134,7 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
 
     all_probabilities = dict(zip(class_names, probs.tolist()))
     findings = sorted(
-        [(name, prob) for name, prob in all_probabilities.items() if prob >= decision_threshold],
+        [(name, prob) for name, prob in all_probabilities.items() if prob >= decision_thresholds[name]],
         key=lambda x: x[1],
         reverse=True,
     )[:max_findings]
@@ -167,7 +175,7 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
         "heatmap_overlay": overlay,
         "individual_heatmaps": individual_heatmaps,
         "legend": legend,
-        "decision_threshold": decision_threshold,
+        "decision_thresholds": decision_thresholds,
     }
 
 
