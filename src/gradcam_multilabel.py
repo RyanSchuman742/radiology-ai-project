@@ -84,7 +84,14 @@ def load_models(device_type: str):
     txv = xrv.models.DenseNet(weights=config["txv_weights"]).to(device).eval()
     txv_indices = [txv.pathologies.index(c) for c in class_names]
 
-    return ours, txv, txv_indices, class_names, config["thresholds"]
+    # Normal/abnormal gate (src/train_gate.py). It only demotes findings in
+    # the UI, never removes them - see evaluate_gated_system.py for why.
+    gate = models.resnet50(weights=None)
+    gate.fc = nn.Linear(gate.fc.in_features, 1)
+    gate.load_state_dict(torch.load(MODELS_DIR / config["gate_weights"], map_location=device)["model_state"])
+    gate.to(device).eval()
+
+    return ours, txv, txv_indices, gate, class_names, config
 
 
 def preprocess(image: Image.Image) -> tuple[torch.Tensor, torch.Tensor, np.ndarray]:
@@ -144,10 +151,13 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
     Returns a dict with: findings (list of {condition, confidence} above the
     decision threshold, sorted by confidence, capped at max_findings for
     legibility), all_probabilities (all 14 conditions), heatmap_overlay
-    (multi-color composite, uint8 RGB), and legend (condition -> "#rrggbb").
+    (multi-color composite, uint8 RGB), legend (condition -> "#rrggbb"),
+    and likely_normal (the gate's verdict - findings are still returned
+    either way, the UI just ranks them lower when it's True).
     """
     device = device or torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-    model, txv, txv_indices, class_names, decision_thresholds = load_models(str(device))
+    model, txv, txv_indices, gate, class_names, config = load_models(str(device))
+    decision_thresholds = config["thresholds"]
 
     image = Image.open(image_path)
     input_tensor, txv_tensor, rgb_float = preprocess(image)
@@ -156,6 +166,7 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
     with torch.no_grad():
         ours_probs = torch.sigmoid(model(input_tensor))[0].cpu().numpy()
         txv_probs = txv(txv_tensor.to(device))[0, txv_indices].cpu().numpy()
+        gate_abnormal_prob = float(torch.sigmoid(gate(input_tensor)).item())
     probs = (ours_probs + txv_probs) / 2
 
     all_probabilities = dict(zip(class_names, probs.tolist()))
@@ -202,6 +213,8 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
         "individual_heatmaps": individual_heatmaps,
         "legend": legend,
         "decision_thresholds": decision_thresholds,
+        "gate_abnormal_probability": gate_abnormal_prob,
+        "likely_normal": gate_abnormal_prob < config["gate_threshold"],
     }
 
 

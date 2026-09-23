@@ -26,6 +26,11 @@ Pneumonia, Pneumothorax. ("No Finding" is implicit - a scan with none of the
   TorchXRayVision's DenseNet121, with per-class thresholds calibrated for the
   averaged output. See "Ensemble with TorchXRayVision" below. Grad-CAM
   heatmaps come from this ResNet50 only.
+- **A separate normal/abnormal gate** decides how findings are *presented*:
+  when it rates a scan likely normal, the page leads with "No significant
+  abnormality detected" and moves any flagged findings into a collapsed
+  low-confidence section. Findings are never hidden. See "Normal/abnormal
+  gate" below.
 
 ## Training data
 
@@ -199,12 +204,52 @@ class except:
   cheating. Unresolved.
 - Emphysema: 77% -> 74%.
 
+## Normal/abnormal gate (deployed, demotes rather than hides)
+
+**Why:** the app runs 14 separate per-condition tests, and a healthy scan
+counts as a false alarm if *any* of them fires. Even at 5% false alarms
+per condition, the chance at least one of 14 fires is about 51% - roughly
+what we measured. Per-condition tuning can't fix that structure. A single
+model answering "is anything abnormal here?" can.
+
+**Model:** `src/train_gate.py` - ResNet50 (ImageNet init, 224px, same
+recipe and patient split as the 14-condition model), trained on NIH "No
+Finding" vs. any finding, 12 epochs, best at epoch 8. **Test AUROC 0.772**
+- lower than hoped, likely because NIH's "No Finding" labels are
+report-mined and noisy. On its own it clears only 26% of healthy scans at
+95% sensitivity, 39% at 90%.
+
+**End-to-end** (`src/evaluate_gated_system.py`, gate threshold chosen on
+validation at 90% sensitivity):
+
+| | Ensemble, no gate | With gate as a hard veto |
+|---|---|---|
+| Healthy *external* X-rays flagged | 53.1% | **35.2%** |
+| Healthy NIH X-rays flagged | 46.6% | **40.6%** |
+| External *pneumonia* X-rays still flagged | 91.2% | 89.2% |
+
+As a hard veto it would cost recall on a few conditions (Cardiomegaly
+68%->63%, Fibrosis 56%->52%, Nodule 53%->51%; others within 1 point). So
+the deployed app **demotes instead of vetoing**: a gate-cleared scan leads
+with "No significant abnormality detected", but every flagged finding is
+still shown in a collapsed low-confidence section, and the explanation
+layer is told to frame them as low-confidence. The headline gets the
+false-alarm improvement above; nothing a clinician could review is lost.
+
+A stricter gate (95% sensitivity) barely helps (46.4% external), and 97.5%
+or 99% does nearly nothing. The gate's ceiling is most likely label quality:
+retraining it on radiologist-verified "No finding" labels (VinDr-CXR) is
+the planned next step.
+
 ## Known limitations
 
-- **Still flags about half of genuinely healthy X-rays with at least one
-  false positive** - 53.1% on external healthy images, 46.6% on NIH, even
-  with the ensemble and calibrated thresholds. Down from 79.3% / 53.3% for
-  the single model, but a known, unresolved limitation, not a hidden one.
+- **Still flags a large share of genuinely healthy X-rays** - with the
+  gate, 35.2% of external healthy images and 40.6% of NIH healthy images
+  still lead with a finding (down from 79.3% / 53.3% for the original single
+  model). A known, unresolved limitation, not a hidden one.
+- NIH labels are report-mined, so some measured "false positives" on NIH
+  are likely real findings the labels missed - a radiologist-verified test
+  set (VinDr-CXR) is needed to know the true rate.
 - The external healthy check is pediatric (Kermany), while training data is
   mostly adult - some of the external false-positive rate may be age-related
   domain shift rather than general over-flagging.

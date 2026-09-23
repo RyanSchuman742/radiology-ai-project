@@ -124,6 +124,23 @@ details ul {
   margin-top: 0.5rem;
 }
 
+.low-confidence {
+  background: #1a1d24;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-top: 1.5rem;
+  color: #e6e6e6;
+}
+
+.low-confidence summary {
+  font-weight: 600;
+}
+
+.low-confidence .individual-heatmaps,
+.low-confidence .explanation {
+  background: #22262f;
+}
+
 .hint {
   color: #9aa0a6;
   font-size: 0.9rem;

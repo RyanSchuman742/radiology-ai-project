@@ -16,7 +16,17 @@ from PIL import Image
 MODEL = "claude-sonnet-5"
 
 
-def build_system_prompt(legend: dict) -> str:
+LIKELY_NORMAL_CONTEXT = (
+    "\n\nImportant context: a separate screening model that judges whether "
+    "the scan is abnormal at all rated this scan as likely normal. The "
+    "findings below still crossed their individual thresholds, so treat them "
+    "as low-confidence possibilities, not established findings. Say so "
+    "plainly at the start, and for each region, give an honest read on "
+    "whether it looks like a plausible genuine concern or more like noise."
+)
+
+
+def build_system_prompt(legend: dict, likely_normal: bool) -> str:
     legend_lines = "\n".join(f"- {color}: {condition}" for condition, color in legend.items())
     return (
         "You are assisting a prototype chest X-ray screening tool. You are "
@@ -38,7 +48,7 @@ def build_system_prompt(legend: dict) -> str:
         "as a possible red flag. Do not claim certainty, and end with one "
         "sentence noting this is an educational prototype, not a medical "
         "diagnosis and not a substitute for a radiologist."
-    )
+    ) + (LIKELY_NORMAL_CONTEXT if likely_normal else "")
 
 
 def image_to_base64_png(image: Image.Image) -> str:
@@ -47,7 +57,9 @@ def image_to_base64_png(image: Image.Image) -> str:
     return base64.standard_b64encode(buf.getvalue()).decode("utf-8")
 
 
-def get_explanation(findings: list[dict], legend: dict, heatmap_image: Image.Image) -> str:
+def get_explanation(
+    findings: list[dict], legend: dict, heatmap_image: Image.Image, likely_normal: bool = False
+) -> str:
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         names = ", ".join(f"{f['condition']} ({f['confidence']:.1%})" for f in findings) or "No Finding"
@@ -75,7 +87,7 @@ def get_explanation(findings: list[dict], legend: dict, heatmap_image: Image.Ima
         response = client.messages.create(
             model=MODEL,
             max_tokens=800,
-            system=build_system_prompt(legend),
+            system=build_system_prompt(legend, likely_normal),
             messages=[{
                 "role": "user",
                 "content": [

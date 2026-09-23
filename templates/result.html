@@ -13,27 +13,70 @@
       <p class="warning">{{ warning }}</p>
     {% endif %}
 
+    {# The screening gate rated the scan likely normal but some findings still
+       crossed their thresholds: show them, but ranked below a normal verdict. #}
+    {% set demoted = likely_normal and findings %}
+
+    {% macro heatmap_figure() %}
+      <figure>
+        <img src="{{ heatmap_data_uri }}" alt="Multi-color Grad-CAM heatmap">
+        <figcaption>Grad-CAM heatmap (all findings)</figcaption>
+      </figure>
+    {% endmacro %}
+
+    {% macro findings_list() %}
+      <ul class="findings-list">
+        {% for f in findings %}
+          <li><span class="swatch" style="background:{{ f.color }}"></span>{{ f.condition }}: {{ f.confidence }}</li>
+        {% endfor %}
+      </ul>
+    {% endmacro %}
+
+    {% macro individual_heatmaps() %}
+      {% if individual_heatmap_uris %}
+      <section class="individual-heatmaps">
+        <h2>Individual condition heatmaps</h2>
+        <p class="hint">The composite heatmap blends overlapping conditions into a mixed color. These show each one in isolation.</p>
+        <div class="thumb-grid">
+          {% for condition, uri in individual_heatmap_uris.items() %}
+            <figure>
+              <img src="{{ uri }}" alt="Grad-CAM heatmap for {{ condition }}">
+              <figcaption>{{ condition }}</figcaption>
+            </figure>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    {% endmacro %}
+
+    {% macro explanation_section() %}
+      <section class="explanation">
+        <h2>Explanation</h2>
+        <p>{{ explanation }}</p>
+      </section>
+    {% endmacro %}
+
     <div class="images">
       <figure>
         <img src="{{ original_data_uri }}" alt="Original X-ray">
         <figcaption>Original</figcaption>
       </figure>
-      <figure>
-        <img src="{{ heatmap_data_uri }}" alt="Multi-color Grad-CAM heatmap">
-        <figcaption>Grad-CAM heatmap (all findings)</figcaption>
-      </figure>
+      {% if not demoted %}{{ heatmap_figure() }}{% endif %}
     </div>
 
     <section class="diagnosis">
-      <h2>Findings</h2>
-      {% if findings %}
-        <ul class="findings-list">
-          {% for f in findings %}
-            <li><span class="swatch" style="background:{{ f.color }}"></span>{{ f.condition }}: {{ f.confidence }}</li>
-          {% endfor %}
-        </ul>
+      {% if demoted %}
+        <h2>No significant abnormality detected</h2>
+        <p>A screening model rated this scan as likely normal. {{ findings|length }} lower-confidence
+          finding{{ 's' if findings|length != 1 }} crossed an individual threshold and {{ 'are' if findings|length != 1 else 'is' }}
+          shown below for review.</p>
       {% else %}
-        <p>No Finding — none of the 14 tracked conditions crossed the decision threshold.</p>
+        <h2>Findings</h2>
+        {% if findings %}
+          {{ findings_list() }}
+        {% else %}
+          <p>No Finding — none of the 14 tracked conditions crossed the decision threshold.</p>
+        {% endif %}
       {% endif %}
 
       <details>
@@ -46,25 +89,18 @@
       </details>
     </section>
 
-    {% if individual_heatmap_uris %}
-    <section class="individual-heatmaps">
-      <h2>Individual condition heatmaps</h2>
-      <p class="hint">The composite above blends overlapping conditions into a mixed color. These show each one in isolation.</p>
-      <div class="thumb-grid">
-        {% for condition, uri in individual_heatmap_uris.items() %}
-          <figure>
-            <img src="{{ uri }}" alt="Grad-CAM heatmap for {{ condition }}">
-            <figcaption>{{ condition }}</figcaption>
-          </figure>
-        {% endfor %}
-      </div>
-    </section>
+    {% if demoted %}
+      <details class="low-confidence">
+        <summary>Possible low-confidence findings ({{ findings|length }})</summary>
+        <div class="images">{{ heatmap_figure() }}</div>
+        {{ findings_list() }}
+        {{ individual_heatmaps() }}
+        {{ explanation_section() }}
+      </details>
+    {% else %}
+      {{ individual_heatmaps() }}
+      {{ explanation_section() }}
     {% endif %}
-
-    <section class="explanation">
-      <h2>Explanation</h2>
-      <p>{{ explanation }}</p>
-    </section>
 
     <a href="/">Analyze another X-ray</a>
   </main>

@@ -80,7 +80,12 @@ pneumonia dataset (CC-BY-4.0) - see `src/download_pneumonia_dataset.py`.
 ## Roadmap
 
 - **Done:** binary (Normal vs. Pneumonia) → multi-label, 14 conditions
-  (NIH ChestX-ray14), per-condition color-coded Grad-CAM heatmaps
+  (NIH ChestX-ray14), per-condition color-coded Grad-CAM heatmaps,
+  per-class threshold calibration, TorchXRayVision ensemble, and a
+  normal/abnormal gate that demotes low-confidence findings
+- **Next:** retrain the gate on radiologist-verified labels (VinDr-CXR),
+  and measure false-alarm rates against a radiologist-labeled test set;
+  higher-resolution training from X-ray-pretrained weights
 - Researched, not yet built: calibrated uncertainty (conformal prediction)
   instead of raw sigmoid confidence; CXR Foundation embeddings instead of
   ImageNet pretraining; prior-scan comparison; symptom/clinical-context

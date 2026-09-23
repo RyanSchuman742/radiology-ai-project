@@ -1,0 +1,112 @@
+{
+  "no gate (deployed now)": {
+    "gate_threshold": null,
+    "nih_healthy_false_alarm": 0.4659516513449098,
+    "kermany_normal_false_alarm": 0.5312697409981049,
+    "kermany_pneumonia_flagged": 0.9124736718932834,
+    "nih_per_class_recall": {
+      "Atelectasis": 0.7317282889079966,
+      "Cardiomegaly": 0.676,
+      "Consolidation": 0.6440281030444965,
+      "Edema": 0.7176470588235294,
+      "Effusion": 0.7140238313473877,
+      "Emphysema": 0.7384615384615385,
+      "Fibrosis": 0.56,
+      "Hernia": 0.4,
+      "Infiltration": 0.46238938053097345,
+      "Mass": 0.5676274944567627,
+      "Nodule": 0.5261437908496732,
+      "Pleural_Thickening": 0.6094276094276094,
+      "Pneumonia": 0.452991452991453,
+      "Pneumothorax": 0.6912751677852349
+    }
+  },
+  "gate @ 90.0% val sensitivity": {
+    "gate_threshold": 0.22620999813079834,
+    "nih_healthy_false_alarm": 0.4061967994552264,
+    "kermany_normal_false_alarm": 0.35249526216045485,
+    "kermany_pneumonia_flagged": 0.8921132693657852,
+    "nih_per_class_recall": {
+      "Atelectasis": 0.7274290627687017,
+      "Cardiomegaly": 0.632,
+      "Consolidation": 0.6440281030444965,
+      "Edema": 0.7176470588235294,
+      "Effusion": 0.7140238313473877,
+      "Emphysema": 0.7333333333333333,
+      "Fibrosis": 0.52,
+      "Hernia": 0.4,
+      "Infiltration": 0.4579646017699115,
+      "Mass": 0.5587583148558758,
+      "Nodule": 0.5098039215686274,
+      "Pleural_Thickening": 0.6094276094276094,
+      "Pneumonia": 0.452991452991453,
+      "Pneumothorax": 0.6823266219239373
+    }
+  },
+  "gate @ 95.0% val sensitivity": {
+    "gate_threshold": 0.1616450846195221,
+    "nih_healthy_false_alarm": 0.44126659856996936,
+    "kermany_normal_false_alarm": 0.46430827542640557,
+    "kermany_pneumonia_flagged": 0.9066229815118184,
+    "nih_per_class_recall": {
+      "Atelectasis": 0.7308684436801376,
+      "Cardiomegaly": 0.664,
+      "Consolidation": 0.6440281030444965,
+      "Edema": 0.7176470588235294,
+      "Effusion": 0.7140238313473877,
+      "Emphysema": 0.7384615384615385,
+      "Fibrosis": 0.5333333333333333,
+      "Hernia": 0.4,
+      "Infiltration": 0.46073008849557523,
+      "Mass": 0.565410199556541,
+      "Nodule": 0.5163398692810458,
+      "Pleural_Thickening": 0.6094276094276094,
+      "Pneumonia": 0.452991452991453,
+      "Pneumothorax": 0.6890380313199105
+    }
+  },
+  "gate @ 97.5% val sensitivity": {
+    "gate_threshold": 0.12057025730609894,
+    "nih_healthy_false_alarm": 0.45488593803200544,
+    "kermany_normal_false_alarm": 0.5129500947567909,
+    "kermany_pneumonia_flagged": 0.9108354785864732,
+    "nih_per_class_recall": {
+      "Atelectasis": 0.7317282889079966,
+      "Cardiomegaly": 0.668,
+      "Consolidation": 0.6440281030444965,
+      "Edema": 0.7176470588235294,
+      "Effusion": 0.7140238313473877,
+      "Emphysema": 0.7384615384615385,
+      "Fibrosis": 0.5466666666666666,
+      "Hernia": 0.4,
+      "Infiltration": 0.4618362831858407,
+      "Mass": 0.5676274944567627,
+      "Nodule": 0.5212418300653595,
+      "Pleural_Thickening": 0.6094276094276094,
+      "Pneumonia": 0.452991452991453,
+      "Pneumothorax": 0.6912751677852349
+    }
+  },
+  "gate @ 99.0% val sensitivity": {
+    "gate_threshold": 0.08676619827747345,
+    "nih_healthy_false_alarm": 0.4630575417092271,
+    "kermany_normal_false_alarm": 0.5281111813013266,
+    "kermany_pneumonia_flagged": 0.9120056166627662,
+    "nih_per_class_recall": {
+      "Atelectasis": 0.7317282889079966,
+      "Cardiomegaly": 0.676,
+      "Consolidation": 0.6440281030444965,
+      "Edema": 0.7176470588235294,
+      "Effusion": 0.7140238313473877,
+      "Emphysema": 0.7384615384615385,
+      "Fibrosis": 0.5533333333333333,
+      "Hernia": 0.4,
+      "Infiltration": 0.46238938053097345,
+      "Mass": 0.5676274944567627,
+      "Nodule": 0.5228758169934641,
+      "Pleural_Thickening": 0.6094276094276094,
+      "Pneumonia": 0.452991452991453,
+      "Pneumothorax": 0.6912751677852349
+    }
+  }
+}

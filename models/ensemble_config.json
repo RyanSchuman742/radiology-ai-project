@@ -15,5 +15,7 @@
     "Pleural_Thickening": 0.5039836764335632,
     "Pneumonia": 0.40839213132858276,
     "Pneumothorax": 0.5322072505950928
-  }
+  },
+  "gate_weights": "resnet_gate.pt",
+  "gate_threshold": 0.22620999813079834
 }

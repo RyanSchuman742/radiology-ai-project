@@ -94,7 +94,9 @@ def diagnose():
         os.remove(temp_path)
 
     heatmap_image = Image.fromarray(result["heatmap_overlay"])
-    explanation = get_explanation(result["findings"], result["legend"], heatmap_image)
+    explanation = get_explanation(
+        result["findings"], result["legend"], heatmap_image, likely_normal=result["likely_normal"]
+    )
 
     individual_heatmap_uris = {
         condition: image_to_data_uri(Image.fromarray(overlay))
@@ -123,6 +125,7 @@ def diagnose():
         all_probabilities=[(name, f"{prob:.1%}") for name, prob in all_probabilities_sorted],
         explanation=explanation,
         warning=warning,
+        likely_normal=result["likely_normal"],
     )
 
 
