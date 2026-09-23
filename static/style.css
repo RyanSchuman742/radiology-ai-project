@@ -124,6 +124,10 @@ details ul {
   margin-top: 0.5rem;
 }
 
+.explanation p {
+  white-space: pre-line;  /* keep the explanation's paragraph breaks */
+}
+
 .low-confidence {
   background: #1a1d24;
   border-radius: 8px;

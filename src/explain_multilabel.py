@@ -47,7 +47,9 @@ def build_system_prompt(legend: dict, likely_normal: bool) -> str:
         "lungs (ribs, spine, diaphragm edge, image borders, text markers) "
         "as a possible red flag. Do not claim certainty, and end with one "
         "sentence noting this is an educational prototype, not a medical "
-        "diagnosis and not a substitute for a radiologist."
+        "diagnosis and not a substitute for a radiologist. Write plain prose "
+        "only - the text is shown as-is on a web page, so don't use markdown "
+        "(no asterisks, bullet points, or headings)."
     ) + (LIKELY_NORMAL_CONTEXT if likely_normal else "")
 
 
