@@ -1,0 +1,13 @@
+{
+  "n_images": 15000,
+  "n_normal": 10606,
+  "n_abnormal": 4394,
+  "n_abnormal_trackable": 3602,
+  "gate_auroc_normal_vs_abnormal": 0.8781055668715272,
+  "healthy_with_any_finding_no_gate": 0.4414482368470677,
+  "healthy_with_headline_finding": 0.31171035263058644,
+  "abnormal_with_any_finding": 0.9012289485662267,
+  "abnormal_with_headline_finding": 0.8784706417842513,
+  "trackable_with_any_finding": 0.9250416435313714,
+  "trackable_with_headline_finding": 0.9033870072182121
+}
