@@ -16,6 +16,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
+import cv2
 import numpy as np
 import torch
 import torchvision
@@ -32,6 +33,7 @@ ENSEMBLE_CONFIG_PATH = MODELS_DIR / "ensemble_config.json"
 IMAGE_SIZE = 224
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
+DISPLAY_MAX_SIDE = 1024  # result images keep the scan's aspect ratio, long side capped here
 MAX_BLEND_ALPHA = 0.65  # blend strength at an individual heatmap's peak attention
 HEATMAP_SOFT_THRESHOLD = 0.35  # suppress low-attention noise below this (post per-heatmap normalization)
 
@@ -95,8 +97,9 @@ def load_models(device_type: str):
 
 
 def preprocess(image: Image.Image) -> tuple[torch.Tensor, torch.Tensor, np.ndarray]:
-    """Returns (our model's input, TXV's input, resized RGB float array [0,1]
-    for the overlay). Both model inputs match evaluate_ensemble.py exactly,
+    """Returns (our model's input, TXV's input, display base: the original
+    scan as an RGB float array [0,1], aspect ratio kept, long side capped at
+    DISPLAY_MAX_SIDE). Both model inputs match evaluate_ensemble.py exactly,
     since the thresholds were calibrated through that pipeline."""
     rgb = image.convert("RGB")
     ours_tensor = OUR_TRANSFORM(rgb).unsqueeze(0)
@@ -105,8 +108,10 @@ def preprocess(image: Image.Image) -> tuple[torch.Tensor, torch.Tensor, np.ndarr
     gray = xrv.utils.normalize(gray, 255)[None, ...]
     txv_tensor = torch.from_numpy(TXV_TRANSFORM(gray)).float().unsqueeze(0)
 
-    rgb_float = np.array(rgb.resize((IMAGE_SIZE, IMAGE_SIZE))).astype(np.float32) / 255.0
-    return ours_tensor, txv_tensor, rgb_float
+    display = rgb.copy()
+    display.thumbnail((DISPLAY_MAX_SIDE, DISPLAY_MAX_SIDE), Image.LANCZOS)
+    display_float = np.array(display).astype(np.float32) / 255.0
+    return ours_tensor, txv_tensor, display_float
 
 
 def normalize_heatmap(cam: np.ndarray) -> np.ndarray:
@@ -126,13 +131,18 @@ def composite_multicolor_heatmap(
 ) -> np.ndarray:
     """Blend each condition's heatmap onto the base image in its own color.
     Where two conditions' hot regions overlap, the pixel shows a weighted
-    mix of both colors rather than one hiding the other."""
+    mix of both colors rather than one hiding the other.
+
+    Grad-CAM maps come out at the model's 224x224 input size. The model saw
+    the scan stretched to a square, so resizing each map to the base's own
+    width and height undoes that stretch and lines it up with the scan."""
     h, w, _ = rgb_float.shape
     total_weight = np.zeros((h, w), dtype=np.float32)
     weighted_color = np.zeros((h, w, 3), dtype=np.float32)
 
     for condition, cam in cams_by_condition.items():
         color = np.array(CONDITION_COLORS[condition], dtype=np.float32) / 255.0
+        cam = cv2.resize(cam.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR)
         weight = normalize_heatmap(cam) * MAX_BLEND_ALPHA
         weighted_color += weight[..., None] * color[None, None, :]
         total_weight += weight
@@ -215,6 +225,8 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
         "decision_thresholds": decision_thresholds,
         "gate_abnormal_probability": gate_abnormal_prob,
         "likely_normal": gate_abnormal_prob < config["gate_threshold"],
+        # Same size as the heatmaps, so the original and overlays line up in the viewer.
+        "display_image": (rgb_float * 255).astype(np.uint8),
     }
 
 

@@ -53,7 +53,9 @@ def build_system_prompt(legend: dict, likely_normal: bool) -> str:
     ) + (LIKELY_NORMAL_CONTEXT if likely_normal else "")
 
 
-def image_to_base64_png(image: Image.Image) -> str:
+def image_to_base64_png(image: Image.Image, max_side: int = 768) -> str:
+    image = image.copy()
+    image.thumbnail((max_side, max_side))  # plenty for describing regions; fewer tokens than full size
     buf = io.BytesIO()
     image.save(buf, format="PNG")
     return base64.standard_b64encode(buf.getvalue()).decode("utf-8")
