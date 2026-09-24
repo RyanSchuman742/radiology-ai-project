@@ -98,34 +98,48 @@ def diagnose():
         result["findings"], result["legend"], heatmap_image, likely_normal=result["likely_normal"]
     )
 
-    individual_heatmap_uris = {
-        condition: image_to_data_uri(Image.fromarray(overlay))
-        for condition, overlay in result["individual_heatmaps"].items()
+    views = {
+        "original": image_to_data_uri(Image.fromarray(result["display_image"])),
+        "overlay": image_to_data_uri(heatmap_image),
+        "findings": {
+            condition: image_to_data_uri(Image.fromarray(overlay))
+            for condition, overlay in result["individual_heatmaps"].items()
+        },
     }
 
-    findings_display = [
-        {
-            "condition": f["condition"],
-            "confidence": f"{f['confidence']:.1%}",
-            "color": result["legend"][f["condition"]],
-        }
+    findings = [
+        {"condition": f["condition"], "confidence": f["confidence"], "color": result["legend"][f["condition"]]}
         for f in result["findings"]
     ]
 
-    all_probabilities_sorted = sorted(
-        result["all_probabilities"].items(), key=lambda x: x[1], reverse=True
+    thresholds = result["decision_thresholds"]
+    all_conditions = sorted(
+        (
+            {"name": name, "prob": prob, "above": prob >= thresholds[name]}
+            for name, prob in result["all_probabilities"].items()
+        ),
+        key=lambda c: c["prob"],
+        reverse=True,
     )
+
+    if findings and not result["likely_normal"]:
+        status = "abnormal"
+    elif findings:
+        status = "low_confidence"
+    else:
+        status = "normal"
 
     return render_template(
         "result.html",
-        original_data_uri=image_to_data_uri(original_image.convert("RGB")),
-        heatmap_data_uri=image_to_data_uri(heatmap_image),
-        individual_heatmap_uris=individual_heatmap_uris,
-        findings=findings_display,
-        all_probabilities=[(name, f"{prob:.1%}") for name, prob in all_probabilities_sorted],
+        views=views,
+        findings=findings,
+        all_conditions=all_conditions,
+        status=status,
+        abnormality_score=result["gate_abnormal_probability"],
         explanation=explanation,
         warning=warning,
-        likely_normal=result["likely_normal"],
+        filename=file.filename,
+        dimensions=f"{uploaded_image.width} × {uploaded_image.height}",
     )
 
 

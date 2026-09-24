@@ -1,23 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Chest X-ray Interpretability Tool</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <main>
-    <h1>Chest X-ray Interpretability Tool</h1>
-    <p class="disclaimer">Educational prototype only — not a medical device, not a diagnosis.</p>
+{% extends "base.html" %}
 
-    {% if error %}
-      <p class="error">{{ error }}</p>
-    {% endif %}
+{% block title %}New analysis · Chest X-ray Interpretability{% endblock %}
+{% block main_class %}upload-page{% endblock %}
 
-    <form action="/diagnose" method="post" enctype="multipart/form-data">
-      <input type="file" name="xray" accept=".png,.jpg,.jpeg" required>
-      <button type="submit">Analyze X-ray</button>
-    </form>
-  </main>
-</body>
-</html>
+{% block content %}
+<section class="upload-card">
+  <div class="upload-head">
+    <h1>Analyze a chest X-ray</h1>
+    <p class="muted">Frontal (PA or AP) chest radiograph · PNG or JPEG · up to 10 MB</p>
+  </div>
+
+  {% if error %}
+    <div class="banner banner-error" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form id="upload-form" action="/diagnose" method="post" enctype="multipart/form-data">
+    <label id="dropzone" class="dropzone" for="xray-input">
+      <input id="xray-input" type="file" name="xray" accept=".png,.jpg,.jpeg" required hidden>
+      <div class="dropzone-empty">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>
+        </svg>
+        <p><strong>Drag and drop an X-ray</strong> or <span class="link">browse files</span></p>
+      </div>
+      <div class="dropzone-preview" hidden>
+        <img id="preview-img" alt="Selected X-ray preview">
+        <div>
+          <p id="preview-name" class="preview-name"></p>
+          <p class="muted small">Click or drop to replace</p>
+        </div>
+      </div>
+    </label>
+
+    <button id="analyze-btn" class="btn-primary" type="submit" disabled>Analyze</button>
+  </form>
+
+  <div id="processing" class="processing" hidden>
+    <span class="spinner" aria-hidden="true"></span>
+    <div>
+      <p><strong>Analyzing…</strong></p>
+      <p class="muted small">Running three models and generating heatmaps. Usually ~15 seconds; the first scan after the app has been idle can take ~45.</p>
+    </div>
+  </div>
+</section>
+
+<section class="capabilities">
+  <div class="capability">
+    <p class="capability-title">14 conditions</p>
+    <p class="muted small">Multi-label detection, from effusion and cardiomegaly to pneumothorax</p>
+  </div>
+  <div class="capability">
+    <p class="capability-title">Localization</p>
+    <p class="muted small">Color-coded Grad-CAM heatmap for each finding</p>
+  </div>
+  <div class="capability">
+    <p class="capability-title">Explanation</p>
+    <p class="muted small">Plain-language reasoning check for every scan</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const input = document.getElementById("xray-input");
+  const dropzone = document.getElementById("dropzone");
+  const button = document.getElementById("analyze-btn");
+  const form = document.getElementById("upload-form");
+
+  function showFile(file) {
+    if (!file) return;
+    document.querySelector(".dropzone-empty").hidden = true;
+    document.querySelector(".dropzone-preview").hidden = false;
+    document.getElementById("preview-name").textContent = file.name;
+    document.getElementById("preview-img").src = URL.createObjectURL(file);
+    button.disabled = false;
+  }
+
+  input.addEventListener("change", () => showFile(input.files[0]));
+
+  ["dragenter", "dragover"].forEach(evt => dropzone.addEventListener(evt, e => {
+    e.preventDefault();
+    dropzone.classList.add("dragging");
+  }));
+  ["dragleave", "drop"].forEach(evt => dropzone.addEventListener(evt, e => {
+    e.preventDefault();
+    dropzone.classList.remove("dragging");
+  }));
+  dropzone.addEventListener("drop", e => {
+    if (!e.dataTransfer.files.length) return;
+    input.files = e.dataTransfer.files;
+    showFile(input.files[0]);
+  });
+
+  form.addEventListener("submit", () => {
+    form.hidden = true;
+    document.getElementById("processing").hidden = false;
+  });
+</script>
+{% endblock %}

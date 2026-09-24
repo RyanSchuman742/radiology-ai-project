@@ -1,108 +1,156 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Result — Chest X-ray Interpretability Tool</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <main>
-    <h1>Result</h1>
-    <p class="disclaimer">Educational prototype only — not a medical device, not a diagnosis.</p>
-    {% if warning %}
-      <p class="warning">{{ warning }}</p>
-    {% endif %}
+{% extends "base.html" %}
 
-    {# The screening gate rated the scan likely normal but some findings still
-       crossed their thresholds: show them, but ranked below a normal verdict. #}
-    {% set demoted = likely_normal and findings %}
+{% block title %}Result · Chest X-ray Interpretability{% endblock %}
+{% block main_class %}result-page{% endblock %}
 
-    {% macro heatmap_figure() %}
-      <figure>
-        <img src="{{ heatmap_data_uri }}" alt="Multi-color Grad-CAM heatmap">
-        <figcaption>Grad-CAM heatmap (all findings)</figcaption>
-      </figure>
-    {% endmacro %}
+{% block content %}
+<div class="study-bar">
+  <a class="back-link" href="/">← New analysis</a>
+  <span class="study-meta">{{ filename }}</span>
+  <span class="study-meta muted">{{ dimensions }} px</span>
+</div>
 
-    {% macro findings_list() %}
-      <ul class="findings-list">
-        {% for f in findings %}
-          <li><span class="swatch" style="background:{{ f.color }}"></span>{{ f.condition }}: {{ f.confidence }}</li>
-        {% endfor %}
-      </ul>
-    {% endmacro %}
-
-    {% macro individual_heatmaps() %}
-      {% if individual_heatmap_uris %}
-      <section class="individual-heatmaps">
-        <h2>Individual condition heatmaps</h2>
-        <p class="hint">The composite heatmap blends overlapping conditions into a mixed color. These show each one in isolation.</p>
-        <div class="thumb-grid">
-          {% for condition, uri in individual_heatmap_uris.items() %}
-            <figure>
-              <img src="{{ uri }}" alt="Grad-CAM heatmap for {{ condition }}">
-              <figcaption>{{ condition }}</figcaption>
-            </figure>
-          {% endfor %}
-        </div>
-      </section>
-      {% endif %}
-    {% endmacro %}
-
-    {% macro explanation_section() %}
-      <section class="explanation">
-        <h2>Explanation</h2>
-        <p>{{ explanation }}</p>
-      </section>
-    {% endmacro %}
-
-    <div class="images">
-      <figure>
-        <img src="{{ original_data_uri }}" alt="Original X-ray">
-        <figcaption>Original</figcaption>
-      </figure>
-      {% if not demoted %}{{ heatmap_figure() }}{% endif %}
+<div class="workspace">
+  <section class="viewer" aria-label="Image viewer">
+    <div class="viewer-toolbar">
+      <div class="segmented" role="group" aria-label="View">
+        <button type="button" data-view="original">Original</button>
+        <button type="button" data-view="overlay" {% if not findings %}disabled title="No findings to overlay"{% endif %}>AI overlay</button>
+      </div>
+      <span id="focus-chip" class="focus-chip" hidden>
+        <span class="swatch" id="focus-swatch"></span>
+        <span id="focus-name"></span>
+        <button type="button" id="focus-clear" aria-label="Show all findings">×</button>
+      </span>
     </div>
 
-    <section class="diagnosis">
-      {% if demoted %}
-        <h2>No significant abnormality detected</h2>
-        <p>A screening model rated this scan as likely normal. {{ findings|length }} lower-confidence
-          finding{{ 's' if findings|length != 1 }} crossed an individual threshold and {{ 'are' if findings|length != 1 else 'is' }}
-          shown below for review.</p>
+    <div class="viewer-stage">
+      <img id="viewer-img" alt="Chest X-ray">
+      {% if findings %}
+      <ul id="viewer-legend" class="viewer-legend" hidden>
+        {% for f in findings %}
+          <li data-condition="{{ f.condition }}"><span class="swatch" style="background:{{ f.color }}"></span>{{ f.condition }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </section>
+
+  <aside class="sidebar">
+    {% if warning %}
+      <div class="banner banner-warn" role="alert">{{ warning }}</div>
+    {% endif %}
+
+    <section class="card summary status-{{ status }}">
+      {% if status == "abnormal" %}
+        <span class="badge badge-danger">Abnormal</span>
+        <h1>Findings detected</h1>
+      {% elif status == "low_confidence" %}
+        <span class="badge badge-ok">Likely normal</span>
+        <h1>No significant abnormality detected</h1>
+        <p class="muted small">{{ findings|length }} low-confidence finding{{ 's' if findings|length != 1 }} listed below for review.</p>
       {% else %}
-        <h2>Findings</h2>
-        {% if findings %}
-          {{ findings_list() }}
-        {% else %}
-          <p>No Finding — none of the 14 tracked conditions crossed the decision threshold.</p>
-        {% endif %}
+        <span class="badge badge-ok">No findings</span>
+        <h1>No significant abnormality detected</h1>
+        <p class="muted small">None of the 14 tracked conditions crossed its threshold.</p>
       {% endif %}
 
+      <div class="score">
+        <div class="score-head">
+          <span class="label" title="Screening model's estimate that any abnormality is present">Abnormality score</span>
+          <span class="score-value">{{ (abnormality_score * 100)|round|int }}<span class="muted">/100</span></span>
+        </div>
+        <div class="bar"><span style="width: {{ (abnormality_score * 100)|round(1) }}%"></span></div>
+      </div>
+    </section>
+
+    {% if findings %}
+    <section class="card">
+      <div class="card-head">
+        <h2>{{ "Low-confidence findings" if status == "low_confidence" else "Findings" }}</h2>
+        <span class="muted small">Select to localize</span>
+      </div>
+      <ul class="findings">
+        {% for f in findings %}
+          <li>
+            <button type="button" class="finding" data-condition="{{ f.condition }}" data-color="{{ f.color }}">
+              <span class="swatch" style="background:{{ f.color }}"></span>
+              <span class="finding-name">{{ f.condition|replace('_', ' ') }}</span>
+              <span class="bar"><span style="width: {{ (f.confidence * 100)|round(1) }}%; background: {{ f.color }}"></span></span>
+              <span class="finding-pct">{{ (f.confidence * 100)|round|int }}%</span>
+            </button>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="card-head">
+        <h2>AI explanation</h2>
+        <span class="muted small">Generated by Claude</span>
+      </div>
+      <p class="explanation">{{ explanation }}</p>
+    </section>
+
+    <section class="card">
       <details>
-        <summary>All 14 condition probabilities</summary>
-        <ul>
-          {% for name, pct in all_probabilities %}
-            <li>{{ name }}: {{ pct }}</li>
+        <summary><h2>All 14 conditions</h2></summary>
+        <ul class="conditions">
+          {% for c in all_conditions %}
+            <li class="{{ 'above' if c.above }}">
+              <span class="condition-name">{{ c.name|replace('_', ' ') }}</span>
+              <span class="bar"><span style="width: {{ (c.prob * 100)|round(1) }}%"></span></span>
+              <span class="condition-pct">{{ (c.prob * 100)|round|int }}%</span>
+            </li>
           {% endfor %}
         </ul>
+        <p class="muted small">Highlighted: crossed that condition's calibrated threshold.</p>
       </details>
     </section>
 
-    {% if demoted %}
-      <details class="low-confidence">
-        <summary>Possible low-confidence findings ({{ findings|length }})</summary>
-        <div class="images">{{ heatmap_figure() }}</div>
-        {{ findings_list() }}
-        {{ individual_heatmaps() }}
-        {{ explanation_section() }}
-      </details>
-    {% else %}
-      {{ individual_heatmaps() }}
-      {{ explanation_section() }}
-    {% endif %}
+    <p class="model-info">
+      Ensemble of a ResNet50 fine-tuned on NIH ChestX-ray14 and TorchXRayVision's DenseNet121.
+      Heatmaps via Grad-CAM. Educational prototype, not a diagnosis and not a substitute for a radiologist.
+    </p>
+  </aside>
+</div>
 
-    <a href="/">Analyze another X-ray</a>
-  </main>
-</body>
-</html>
+<script type="application/json" id="views-data">{{ views|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const views = JSON.parse(document.getElementById("views-data").textContent);
+  const img = document.getElementById("viewer-img");
+  const segButtons = document.querySelectorAll(".segmented button");
+  const findingButtons = document.querySelectorAll(".finding");
+  const legend = document.getElementById("viewer-legend");
+  const chip = document.getElementById("focus-chip");
+
+  function show(view, condition) {
+    img.src = condition ? views.findings[condition] : views[view];
+    segButtons.forEach(b => b.setAttribute("aria-pressed", !condition && b.dataset.view === view));
+    findingButtons.forEach(b => b.setAttribute("aria-pressed", b.dataset.condition === condition));
+
+    chip.hidden = !condition;
+    if (condition) {
+      document.getElementById("focus-name").textContent = condition.replace("_", " ");
+      document.getElementById("focus-swatch").style.background =
+        document.querySelector(`.finding[data-condition="${condition}"]`).dataset.color;
+    }
+    if (legend) {
+      legend.hidden = view !== "overlay" && !condition;
+      legend.querySelectorAll("li").forEach(li => {
+        li.hidden = Boolean(condition) && li.dataset.condition !== condition;
+      });
+    }
+  }
+
+  segButtons.forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
+  findingButtons.forEach(b => b.addEventListener("click", () => show("overlay", b.dataset.condition)));
+  document.getElementById("focus-clear").addEventListener("click", () => show("overlay"));
+
+  show({{ ("overlay" if status == "abnormal" else "original")|tojson }});
+</script>
+{% endblock %}
