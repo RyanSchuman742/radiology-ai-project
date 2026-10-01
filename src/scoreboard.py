@@ -192,7 +192,7 @@ def score(name: str):
     probs, abnormal_prob, config = SYSTEMS[name](paths, device)
 
     SCOREBOARD_DIR.mkdir(exist_ok=True)
-    np.savez_compressed(SCOREBOARD_DIR / f"{name}.npz", image_id=test["image_id"].to_numpy(),
+    np.savez_compressed(SCOREBOARD_DIR / f"{name}.npz", image_id=test["image_id"].to_numpy(dtype=str),
                         probs=probs, abnormal_prob=abnormal_prob)
 
     pred = decisions(probs, abnormal_prob, config)

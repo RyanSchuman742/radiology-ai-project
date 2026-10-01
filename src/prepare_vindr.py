@@ -39,6 +39,8 @@ VINDR_DIR = PROJECT_ROOT / "data" / "vindr"
 ZIP_PATH = VINDR_DIR / "vinbigdata-chest-xray-abnormalities-detection.zip"
 IMAGES_DIR = VINDR_DIR / "images"
 LABELS_PATH = VINDR_DIR / "labels.csv"
+ANNOTATIONS_PATH = VINDR_DIR / "annotations.csv"  # raw train.csv: one row per radiologist box
+SIZES_PATH = VINDR_DIR / "original_sizes.csv"  # boxes are in original DICOM pixels
 LONG_SIDE = 1024  # 4x our 224px training size, 2x the planned 512px upgrade
 NO_FINDING = "No finding"
 
@@ -75,6 +77,17 @@ def convert(member: str) -> tuple[str, str | None]:
     return image_id, str(ds.PhotometricInterpretation)
 
 
+def original_sizes(zf: zipfile.ZipFile, members: list[str]) -> pd.DataFrame:
+    """Width/height from each DICOM header (pixels not read), to map the
+    radiologists' boxes onto the downscaled PNGs."""
+    rows = []
+    for m in members:
+        with zf.open(m) as f:
+            ds = pydicom.dcmread(f, stop_before_pixels=True, specific_tags=["Rows", "Columns"])
+        rows.append({"image_id": Path(m).stem, "orig_width": ds.Columns, "orig_height": ds.Rows})
+    return pd.DataFrame(rows)
+
+
 def build_labels(annotations: pd.DataFrame) -> pd.DataFrame:
     per_rad_abnormal = (
         annotations.groupby(["image_id", "rad_id"])["class_name"]
@@ -100,6 +113,8 @@ def main():
     with zipfile.ZipFile(ZIP_PATH) as zf:
         members = [m for m in zf.namelist() if m.startswith("train/") and m.endswith(".dicom")]
         annotations = pd.read_csv(zf.open("train.csv"))
+        annotations.to_csv(ANNOTATIONS_PATH, index=False)
+        original_sizes(zf, members).to_csv(SIZES_PATH, index=False)
     print(f"{len(members)} training DICOMs in zip, {annotations['image_id'].nunique()} images in train.csv", flush=True)
 
     photometric_counts: dict[str, int] = {}
