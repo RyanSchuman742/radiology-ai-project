@@ -1,0 +1,288 @@
+{
+  "system": "deployed",
+  "date": "2026-10-01",
+  "commit": "c6015e7",
+  "n_images": 2250,
+  "n_normal": 1591,
+  "n_trackable": 540,
+  "headline_classes": [
+    "Cardiomegaly",
+    "Infiltration",
+    "Pleural effusion",
+    "Pleural thickening",
+    "Pulmonary fibrosis",
+    "Nodule/Mass"
+  ],
+  "positives": {
+    "Atelectasis": 8,
+    "Cardiomegaly": 264,
+    "Consolidation": 18,
+    "Infiltration": 47,
+    "Pleural effusion": 99,
+    "Pleural thickening": 123,
+    "Pneumothorax": 14,
+    "Pulmonary fibrosis": 151,
+    "Nodule/Mass": 59
+  },
+  "config": {
+    "txv_weights": "densenet121-res224-all",
+    "thresholds": {
+      "Atelectasis": 0.516925573348999,
+      "Cardiomegaly": 0.4761950969696045,
+      "Consolidation": 0.5493343472480774,
+      "Edema": 0.4664131999015808,
+      "Effusion": 0.5496852397918701,
+      "Emphysema": 0.55943763256073,
+      "Fibrosis": 0.5349833965301514,
+      "Hernia": 0.8880871534347534,
+      "Infiltration": 0.5400577783584595,
+      "Mass": 0.5956282615661621,
+      "Nodule": 0.5242143869400024,
+      "Pleural_Thickening": 0.5039836764335632,
+      "Pneumonia": 0.40839213132858276,
+      "Pneumothorax": 0.5322072505950928
+    },
+    "gate_weights": "resnet_gate.pt",
+    "gate_threshold": 0.22620999813079834
+  },
+  "metrics": {
+    "healthy_false_alarm": {
+      "value": 0.2834695160276556,
+      "ci95": [
+        0.261174256290114,
+        0.3071020868827593
+      ]
+    },
+    "healthy_any_finding_no_gate": {
+      "value": 0.4274041483343809,
+      "ci95": [
+        0.4020224383612119,
+        0.45193569274184764
+      ]
+    },
+    "trackable_sensitivity": {
+      "value": 0.937037037037037,
+      "ci95": [
+        0.9162011173184358,
+        0.9568500502420755
+      ]
+    },
+    "abnormal_auroc": {
+      "value": 0.9062537852812053,
+      "ci95": [
+        0.8926914169329009,
+        0.9196512733630501
+      ]
+    },
+    "abnormal_auroc_monochrome1": {
+      "value": 0.9370044052863437,
+      "ci95": [
+        0.913577825170509,
+        0.9586623027014132
+      ]
+    },
+    "abnormal_auroc_monochrome2": {
+      "value": 0.889797753103919,
+      "ci95": [
+        0.8725780481591062,
+        0.9065070117116341
+      ]
+    },
+    "auroc:Atelectasis": {
+      "value": 0.8114035087719299,
+      "ci95": [
+        0.6793972109761583,
+        0.93062106918239
+      ]
+    },
+    "sensitivity:Atelectasis": {
+      "value": 0.375,
+      "ci95": [
+        0.0,
+        0.75
+      ]
+    },
+    "healthy_flag_rate:Atelectasis": {
+      "value": 0.05216844751728473,
+      "ci95": [
+        0.04134807272223205,
+        0.06311881188118812
+      ]
+    },
+    "auroc:Cardiomegaly": {
+      "value": 0.9261134490618973,
+      "ci95": [
+        0.9114028127212368,
+        0.939698759205505
+      ]
+    },
+    "sensitivity:Cardiomegaly": {
+      "value": 0.7537878787878788,
+      "ci95": [
+        0.7022715841174033,
+        0.8045156837406015
+      ]
+    },
+    "healthy_flag_rate:Cardiomegaly": {
+      "value": 0.11062225015713388,
+      "ci95": [
+        0.0954729109383208,
+        0.1255453905368467
+      ]
+    },
+    "auroc:Consolidation": {
+      "value": 0.9617278310745647,
+      "ci95": [
+        0.9323798639061903,
+        0.984683351058632
+      ]
+    },
+    "sensitivity:Consolidation": {
+      "value": 0.7222222222222222,
+      "ci95": [
+        0.5,
+        0.9167499999999995
+      ]
+    },
+    "healthy_flag_rate:Consolidation": {
+      "value": 0.0018856065367693275,
+      "ci95": [
+        0.0,
+        0.004364157836848925
+      ]
+    },
+    "auroc:Infiltration": {
+      "value": 0.9127739187548514,
+      "ci95": [
+        0.8781968178864691,
+        0.9448664006652422
+      ]
+    },
+    "sensitivity:Infiltration": {
+      "value": 0.6382978723404256,
+      "ci95": [
+        0.5,
+        0.7750127551020408
+      ]
+    },
+    "healthy_flag_rate:Infiltration": {
+      "value": 0.041483343808925204,
+      "ci95": [
+        0.03223718427727047,
+        0.052109181141439205
+      ]
+    },
+    "auroc:Pleural effusion": {
+      "value": 0.9468049012194886,
+      "ci95": [
+        0.9176948880815635,
+        0.9710623599103025
+      ]
+    },
+    "sensitivity:Pleural effusion": {
+      "value": 0.7474747474747475,
+      "ci95": [
+        0.6592857142857143,
+        0.8318146417445481
+      ]
+    },
+    "healthy_flag_rate:Pleural effusion": {
+      "value": 0.00754242614707731,
+      "ci95": [
+        0.0037711538522278267,
+        0.011942174732872407
+      ]
+    },
+    "auroc:Pleural thickening": {
+      "value": 0.916163198329231,
+      "ci95": [
+        0.889485239442314,
+        0.9391784446550683
+      ]
+    },
+    "sensitivity:Pleural thickening": {
+      "value": 0.7804878048780488,
+      "ci95": [
+        0.7031144425675676,
+        0.8495591855745558
+      ]
+    },
+    "healthy_flag_rate:Pleural thickening": {
+      "value": 0.056568196103079824,
+      "ci95": [
+        0.045595790630231885,
+        0.06877461111715433
+      ]
+    },
+    "auroc:Pneumothorax": {
+      "value": 0.9205886124647346,
+      "ci95": [
+        0.8688987319565612,
+        0.9639435503999931
+      ]
+    },
+    "sensitivity:Pneumothorax": {
+      "value": 0.5,
+      "ci95": [
+        0.2222222222222222,
+        0.7692307692307693
+      ]
+    },
+    "healthy_flag_rate:Pneumothorax": {
+      "value": 0.01571338780641106,
+      "ci95": [
+        0.010139256448105722,
+        0.021907438399318305
+      ]
+    },
+    "auroc:Pulmonary fibrosis": {
+      "value": 0.8008013245033113,
+      "ci95": [
+        0.7598762028485002,
+        0.8390482654400904
+      ]
+    },
+    "sensitivity:Pulmonary fibrosis": {
+      "value": 0.7019867549668874,
+      "ci95": [
+        0.6267404042576068,
+        0.7730727193238122
+      ]
+    },
+    "healthy_flag_rate:Pulmonary fibrosis": {
+      "value": 0.1684475172847266,
+      "ci95": [
+        0.15051004343803012,
+        0.18661857666589526
+      ]
+    },
+    "auroc:Nodule/Mass": {
+      "value": 0.8889065139630243,
+      "ci95": [
+        0.837444839881062,
+        0.9328596988399405
+      ]
+    },
+    "sensitivity:Nodule/Mass": {
+      "value": 0.7288135593220338,
+      "ci95": [
+        0.6153846153846154,
+        0.8405797101449275
+      ]
+    },
+    "healthy_flag_rate:Nodule/Mass": {
+      "value": 0.04399748585795098,
+      "ci95": [
+        0.034267813938042596,
+        0.05441008734238527
+      ]
+    },
+    "macro_auroc": {
+      "value": 0.8985938843053006,
+      "ci95": [
+        0.884125333243448,
+        0.9124486116296011
+      ]
+    }
+  }
+}
