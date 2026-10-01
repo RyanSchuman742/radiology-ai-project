@@ -1,0 +1,46 @@
+{
+  "gate_test_auroc": {
+    "current": 0.9062537852812053,
+    "retrained": 0.9905605220564462
+  },
+  "gate_test_auroc_within_photometric_group": {
+    "current": {
+      "MONOCHROME1": 0.9370044052863437,
+      "MONOCHROME2": 0.889797753103919
+    },
+    "retrained": {
+      "MONOCHROME1": 0.9939794419970631,
+      "MONOCHROME2": 0.9881749219098617
+    }
+  },
+  "gate_nih_test_auroc": {
+    "current": 0.7717810181589487,
+    "retrained": 0.7516571975408859
+  },
+  "setups": {
+    "1. current gate, deployed threshold": {
+      "gate_threshold": 0.22620999813079834,
+      "vindr_healthy_false_alarm": 0.2834695160276556,
+      "vindr_abnormal_caught": 0.9195751138088012,
+      "vindr_trackable_caught": 0.937037037037037,
+      "kermany_healthy_false_alarm": 0.35249526216045485,
+      "kermany_pneumonia_caught": 0.8921132693657852
+    },
+    "2. current gate, VinDr-tuned threshold": {
+      "gate_threshold": 0.28414106369018555,
+      "vindr_healthy_false_alarm": 0.2250157133878064,
+      "vindr_abnormal_caught": 0.9028831562974203,
+      "vindr_trackable_caught": 0.9166666666666666,
+      "kermany_healthy_false_alarm": 0.2558433354390398,
+      "kermany_pneumonia_caught": 0.8635619003042359
+    },
+    "3. retrained gate (finetune), VinDr-tuned threshold": {
+      "gate_threshold": 0.30633318424224854,
+      "vindr_healthy_false_alarm": 0.02199874292897549,
+      "vindr_abnormal_caught": 0.8922610015174507,
+      "vindr_trackable_caught": 0.912962962962963,
+      "kermany_healthy_false_alarm": 0.21162349968414404,
+      "kermany_pneumonia_caught": 0.8965597940556985
+    }
+  }
+}

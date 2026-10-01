@@ -1,0 +1,94 @@
+{
+  "gate_thresholds": {
+    "current": 0.22620999813079834,
+    "retrained": 0.30633318424224854
+  },
+  "n_abnormal": 4657,
+  "n_dropped": 465,
+  "n_gained": 18,
+  "per_condition_headline_sensitivity": {
+    "Atelectasis": {
+      "n": 1163,
+      "current": 0.8907996560619088,
+      "retrained": 0.7876182287188306
+    },
+    "Cardiomegaly": {
+      "n": 250,
+      "current": 0.824,
+      "retrained": 0.704
+    },
+    "Consolidation": {
+      "n": 427,
+      "current": 0.927400468384075,
+      "retrained": 0.9039812646370023
+    },
+    "Edema": {
+      "n": 170,
+      "current": 0.9764705882352941,
+      "retrained": 0.9176470588235294
+    },
+    "Effusion": {
+      "n": 1091,
+      "current": 0.9404216315307058,
+      "retrained": 0.8964252978918423
+    },
+    "Emphysema": {
+      "n": 195,
+      "current": 0.9333333333333333,
+      "retrained": 0.8769230769230769
+    },
+    "Fibrosis": {
+      "n": 150,
+      "current": 0.8266666666666667,
+      "retrained": 0.6666666666666666
+    },
+    "Hernia": {
+      "n": 15,
+      "current": 0.9333333333333333,
+      "retrained": 0.8
+    },
+    "Infiltration": {
+      "n": 1808,
+      "current": 0.7516592920353983,
+      "retrained": 0.6692477876106194
+    },
+    "Mass": {
+      "n": 451,
+      "current": 0.8736141906873615,
+      "retrained": 0.7716186252771619
+    },
+    "Nodule": {
+      "n": 612,
+      "current": 0.7712418300653595,
+      "retrained": 0.6650326797385621
+    },
+    "Pleural_Thickening": {
+      "n": 297,
+      "current": 0.8956228956228957,
+      "retrained": 0.8080808080808081
+    },
+    "Pneumonia": {
+      "n": 117,
+      "current": 0.8888888888888888,
+      "retrained": 0.8034188034188035
+    },
+    "Pneumothorax": {
+      "n": 447,
+      "current": 0.912751677852349,
+      "retrained": 0.843400447427293
+    }
+  },
+  "by_label_count": {
+    "1 finding": {
+      "n": 2860,
+      "current": 0.7262237762237762,
+      "retrained": 0.6094405594405594
+    },
+    "2+ findings": {
+      "n": 1797,
+      "current": 0.9337785197551475,
+      "retrained": 0.8708959376739009
+    }
+  },
+  "dropped_share_single_label": 0.7505376344086021
+}

@@ -1,0 +1,12 @@
+{
+  "current": {
+    "gate_threshold": 0.22620999813079834,
+    "healthy_headline_finding": 0.4061967994552264,
+    "abnormal_headline_finding": 0.8063130770882543
+  },
+  "retrained": {
+    "gate_threshold": 0.30633318424224854,
+    "healthy_headline_finding": 0.28651685393258425,
+    "abnormal_headline_finding": 0.7103285376852051
+  }
+}

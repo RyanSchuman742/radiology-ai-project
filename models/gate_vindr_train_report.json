@@ -1,0 +1,17 @@
+{
+  "current_nih_gate": {
+    "val_auroc": 0.8592853007575808,
+    "test_auroc": 0.9062537852812053
+  },
+  "finetune": {
+    "best_epoch": 7,
+    "val_auroc": 0.9868846861471345,
+    "test_auroc": 0.9905605220564462
+  },
+  "imagenet": {
+    "best_epoch": 12,
+    "val_auroc": 0.9866090461425183,
+    "test_auroc": 0.9883687548225079
+  },
+  "winner_by_val": "finetune"
+}
