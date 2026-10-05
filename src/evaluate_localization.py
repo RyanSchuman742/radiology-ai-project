@@ -18,9 +18,16 @@ Coordinates: the model sees the scan stretched to a 224px square and the
 app stretches the heatmap back, so boxes (in original DICOM pixels) and
 heatmaps are compared in the same normalized square grid.
 
-Writes models/localization_report.json and an example figure.
+v2 (train_v2.py) letterboxes scans into a padded square instead of
+stretching them, so its heatmaps are cropped back to the image area first.
+
+Writes models/localization_report[_<system>].json, per-finding CSV and an
+example figure.
+
+Usage: python src/evaluate_localization.py [--system deployed|v2]
 """
 
+import argparse
 import json
 
 import cv2
@@ -34,11 +41,60 @@ from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from evaluate_vindr import VINDR_TO_OURS
 from gradcam_multilabel import CONDITION_COLORS, composite_multicolor_heatmap, load_models, normalize_heatmap, preprocess
 from scoreboard import SCOREBOARD_DIR, VINDR_DIR, load_test_set
-from train_multilabel import MODEL_DIR
+from train_multilabel import CONDITIONS, MODEL_DIR
 
 GRID = 448
-REPORT_PATH = MODEL_DIR / "localization_report.json"
-FIGURE_PATH = MODEL_DIR / "localization_examples.png"
+
+
+def output_path(stem: str, suffix: str, system: str):
+    return MODEL_DIR / f"{stem}{'' if system == 'deployed' else '_' + system}{suffix}"
+
+
+class DeployedHeatmaps:
+    """The live app: Grad-CAM on our ResNet50, scan stretched to 224x224."""
+
+    def __init__(self, device):
+        self.device = device
+        model, _, _, _, _, config = load_models(str(device))
+        self.thresholds = config["thresholds"]
+        self.engine = GradCAM(model=model, target_layers=[model.layer4[-1]])
+
+    def prepare(self, image):
+        return preprocess(image)[0].to(self.device)
+
+    def cam(self, x, idx: int) -> np.ndarray:
+        cam = self.engine(input_tensor=x, targets=[ClassifierOutputTarget(idx)])[0]
+        return cv2.resize(cam.astype(np.float32), (GRID, GRID), interpolation=cv2.INTER_LINEAR)
+
+
+class V2Heatmaps:
+    """v2: Grad-CAM on the DenseNet's last feature layer, scan letterboxed."""
+
+    def __init__(self, device):
+        from calibrate_v2 import CONFIG_PATH, load_v2
+        from train_v2 import IMAGE_SIZE
+        self.device, self.size = device, IMAGE_SIZE
+        self.thresholds = json.loads(CONFIG_PATH.read_text())["thresholds"]
+        model = load_v2(device)
+        self.engine = GradCAM(model=model, target_layers=[model.features[-1]])
+
+    def prepare(self, image):
+        import train_v2
+        boxed = train_v2.letterbox(image.convert("L"), self.size)
+        pixels = train_v2.xrv.utils.normalize(np.asarray(boxed, dtype=np.float32), 255)
+        scale = self.size / max(image.size)
+        w, h = round(image.width * scale), round(image.height * scale)
+        crop = ((self.size - w) // 2, (self.size - h) // 2, w, h)
+        return torch.from_numpy(pixels)[None, None].to(self.device), crop
+
+    def cam(self, prepared, idx: int) -> np.ndarray:
+        x, (x0, y0, w, h) = prepared
+        cam = self.engine(input_tensor=x, targets=[ClassifierOutputTarget(idx)])[0]
+        cam = cv2.resize(cam.astype(np.float32), (self.size, self.size), interpolation=cv2.INTER_LINEAR)
+        return cv2.resize(cam[y0:y0 + h, x0:x0 + w], (GRID, GRID), interpolation=cv2.INTER_LINEAR)
+
+
+HEATMAPS = {"deployed": DeployedHeatmaps, "v2": V2Heatmaps}
 
 
 def finding_masks(test: pd.DataFrame) -> list[tuple[str, str, np.ndarray, list]]:
@@ -67,32 +123,35 @@ def finding_masks(test: pd.DataFrame) -> list[tuple[str, str, np.ndarray, list]]
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--system", choices=HEATMAPS, default="deployed")
+    system = parser.parse_args().system
+
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-    model, _, _, _, class_names, config = load_models(str(device))
-    cam_engine = GradCAM(model=model, target_layers=[model.layer4[-1]])
+    heatmaps = HEATMAPS[system](device)
+    class_names = CONDITIONS
 
     test = load_test_set()
-    saved = np.load(SCOREBOARD_DIR / "deployed.npz")  # ensemble probs, to know what the app showed
+    saved = np.load(SCOREBOARD_DIR / f"{system}.npz")  # scoreboard probs, to know what the app would show
     probs = dict(zip(saved["image_id"], saved["probs"]))
-    thresholds = np.array([config["thresholds"][c] for c in class_names])
+    thresholds = np.array([heatmaps.thresholds[c] for c in class_names])
 
     pairs = finding_masks(test)
     print(f"{len(pairs)} radiologist-marked findings on {len({p[0] for p in pairs})} held-out images", flush=True)
 
     rows, examples = [], []
-    current_id, input_tensor = None, None
+    current_id, prepared = None, None
     for n, (image_id, vindr_class, mask, boxes) in enumerate(pairs):
         if image_id != current_id:
             image = Image.open(VINDR_DIR / "images" / f"{image_id}.png")
-            input_tensor = preprocess(image)[0].to(device)
+            prepared = heatmaps.prepare(image)
             current_id = image_id
         p = probs[image_id]
         # Nodule/Mass: use whichever of our two the ensemble rated higher
         condition = max(VINDR_TO_OURS[vindr_class], key=lambda c: p[class_names.index(c)])
         idx = class_names.index(condition)
 
-        cam = cam_engine(input_tensor=input_tensor, targets=[ClassifierOutputTarget(idx)])[0]
-        cam = cv2.resize(cam.astype(np.float32), (GRID, GRID), interpolation=cv2.INTER_LINEAR)
+        cam = heatmaps.cam(prepared, idx)
         shown = normalize_heatmap(cam)
         peak = np.unravel_index(cam.argmax(), cam.shape)
 
@@ -112,15 +171,17 @@ def main():
     report = {"n_findings": len(df), "n_images": int(df["image_id"].nunique()),
               "overall": summarize(df), "overall_flagged_only": summarize(df[df["flagged"]]),
               "per_condition": {c: summarize(g) for c, g in df.groupby("vindr_class")}}
-    REPORT_PATH.write_text(json.dumps(report, indent=2))
-    df.to_csv(MODEL_DIR / "localization_per_finding.csv", index=False)
+    report_path = output_path("localization_report", ".json", system)
+    figure_path = output_path("localization_examples", ".png", system)
+    report_path.write_text(json.dumps(report, indent=2))
+    df.to_csv(output_path("localization_per_finding", ".csv", system), index=False)
 
     print(f"\n{'':20s} {'n':>4s}  {'pointing':>8s} {'chance':>7s}  {'heat in box':>11s}  {'lift':>5s}")
     for name, s in [("ALL", report["overall"]), ("all, flagged only", report["overall_flagged_only"])] + \
                    sorted(report["per_condition"].items(), key=lambda kv: -kv[1]["n"]):
         print(f"{name:20s} {s['n']:4d}  {s['pointing']:8.1%} {s['chance']:7.1%}  {s['heat_in_box']:11.1%}  {s['lift']:5.2f}")
-    draw_examples(examples)
-    print(f"\nSaved {REPORT_PATH.name}, localization_per_finding.csv and {FIGURE_PATH.name}")
+    draw_examples(examples, figure_path)
+    print(f"\nSaved {report_path.name}, per-finding CSV and {figure_path.name}")
 
 
 def summarize(df: pd.DataFrame) -> dict:
@@ -129,7 +190,7 @@ def summarize(df: pd.DataFrame) -> dict:
             "lift": float(df["heat_in_box"].mean() / df["box_area"].mean())}
 
 
-def draw_examples(examples, size: int = 360):
+def draw_examples(examples, figure_path, size: int = 360):
     """One flagged example per condition: the app's heatmap with the
     radiologists' boxes drawn on top, so the numbers can be eyeballed."""
     chosen, seen = [], set()
@@ -159,7 +220,7 @@ def draw_examples(examples, size: int = 360):
     grid = Image.new("RGB", (cols * size, ((len(tiles) + cols - 1) // cols) * (size + 28)), (18, 21, 26))
     for i, t in enumerate(tiles):
         grid.paste(t, ((i % cols) * size, (i // cols) * (size + 28)))
-    grid.save(FIGURE_PATH)
+    grid.save(figure_path)
 
 
 if __name__ == "__main__":

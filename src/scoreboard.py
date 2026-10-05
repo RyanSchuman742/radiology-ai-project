@@ -73,7 +73,14 @@ def deployed_system(paths, device):
     return probs, abnormal, json.loads(CONFIG_PATH.read_text())
 
 
-SYSTEMS = {"deployed": deployed_system}
+def v2_system(paths, device):
+    """train_v2.py's model alone, thresholds from calibrate_v2.py."""
+    from calibrate_v2 import CONFIG_PATH as V2_CONFIG_PATH, load_v2, predict_v2
+    probs, abnormal = predict_v2(load_v2(device), paths, device)
+    return probs, abnormal, json.loads(V2_CONFIG_PATH.read_text())
+
+
+SYSTEMS = {"deployed": deployed_system, "v2": v2_system}
 
 
 # --- ground truth and decisions ---------------------------------------------
