@@ -487,12 +487,24 @@ h1, h2, p {
   color: var(--muted);
 }
 
-/* Summary */
+/* Interpretation */
 
 .explanation {
-  white-space: pre-line;
-  line-height: 1.6;
+  line-height: 1.55;
 }
+
+.explanation h3 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin: 12px 0 4px;
+}
+
+.explanation h3:first-child { margin-top: 0; }
+
+.explanation p { margin: 0 0 6px; }
 
 .disclosure {
   margin-top: 8px;

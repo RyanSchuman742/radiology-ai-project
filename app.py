@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from PIL import Image
 
-from src.explain_multilabel import get_explanation
+from src.explain_multilabel import HEADINGS, get_explanation
 from src.gradcam_multilabel import diagnose_with_heatmap
 
 load_dotenv()
@@ -95,7 +95,12 @@ def diagnose():
 
     heatmap_image = Image.fromarray(result["heatmap_overlay"])
     explanation = get_explanation(
-        result["findings"], result["legend"], heatmap_image, likely_normal=result["likely_normal"]
+        result["findings"],
+        result["legend"],
+        Image.fromarray(result["display_image"]),
+        heatmap_image,
+        likely_normal=result["likely_normal"],
+        abnormality_score=result["gate_abnormal_probability"],
     )
 
     views = {
@@ -137,6 +142,7 @@ def diagnose():
         status=status,
         abnormality_score=result["gate_abnormal_probability"],
         explanation=explanation,
+        report_headings=HEADINGS,
         warning=warning,
         filename=file.filename,
         dimensions=f"{uploaded_image.width} × {uploaded_image.height}",

@@ -81,9 +81,17 @@
     {% endif %}
 
     <section class="report-section">
-      <h2>Summary</h2>
-      <p class="explanation">{{ explanation }}</p>
-      {% if findings %}<p class="disclosure">Machine-generated text. Verify against the image.</p>{% endif %}
+      <h2>Interpretation</h2>
+      <div class="explanation">
+        {% for line in explanation.split('\n') %}
+          {% if line.strip() in report_headings %}
+            <h3>{{ line.strip()|title }}</h3>
+          {% elif line.strip() %}
+            <p>{{ line.strip() }}</p>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <p class="disclosure">Machine-generated preliminary draft. Requires review by a radiologist.</p>
     </section>
 
     <section class="report-section">
