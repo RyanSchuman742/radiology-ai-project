@@ -79,7 +79,10 @@ def get_explanation(
     try:
         response = client.messages.create(
             model=MODEL,
-            max_tokens=400,
+            # Thinking is on by default for this model and its tokens count
+            # against max_tokens, so leave room; low effort suits a short summary.
+            max_tokens=4000,
+            output_config={"effort": "low"},
             system=build_system_prompt(legend, likely_normal),
             messages=[{
                 "role": "user",
@@ -104,4 +107,9 @@ def get_explanation(
             f"Model predicted: {names}.)"
         )
 
-    return response.content[0].text
+    # The response can start with a thinking block - keep only the text.
+    text = "".join(b.text for b in response.content if b.type == "text").strip()
+    if not text:
+        names = ", ".join(f"{f['condition']} ({f['confidence']:.1%})" for f in findings)
+        return f"(Summary unavailable. Model predicted: {names}.)"
+    return text
