@@ -3,8 +3,8 @@
 Predictions are an ensemble: the average of our fine-tuned ResNet50 and
 TorchXRayVision's DenseNet121 trained on several combined public datasets
 (see src/evaluate_ensemble.py for why - it cut false positives on outside
-healthy X-rays from 79% to 53% at unchanged sensitivity). Grad-CAM comes
-from our ResNet50 only.
+healthy X-rays from 79% to 53% at unchanged sensitivity). Heatmaps
+(LayerCAM, a Grad-CAM variant) come from our ResNet50 only.
 
 Instead of one heatmap for "the" prediction, computes a separate Grad-CAM
 pass per condition flagged as present, then composites them into one image
@@ -22,7 +22,7 @@ import torch
 import torchvision
 import torchxrayvision as xrv
 from PIL import Image
-from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam import LayerCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from torchvision import models, transforms
 from torch import nn
@@ -186,8 +186,11 @@ def diagnose_with_heatmap(image_path: str, device: torch.device | None = None, m
         reverse=True,
     )[:max_findings]
 
-    target_layer = model.layer4[-1]
-    cam_engine = GradCAM(model=model, target_layers=[target_layer])
+    # LayerCAM over the last two ResNet blocks (14x14 + 7x7) rather than
+    # Grad-CAM on the last one: on radiologist-marked findings its peak lands
+    # in the marked region 59.6% vs 49.9% of the time (VinDr boxes) and 61.3%
+    # vs 47.4% (CheXpert outlines) - see src/compare_heatmaps.py.
+    cam_engine = LayerCAM(model=model, target_layers=[model.layer3[-1], model.layer4[-1]])
 
     cams_by_condition = {}
     for condition, _ in findings:

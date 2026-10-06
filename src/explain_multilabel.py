@@ -17,39 +17,34 @@ MODEL = "claude-sonnet-5"
 
 
 LIKELY_NORMAL_CONTEXT = (
-    "\n\nImportant context: a separate screening model that judges whether "
-    "the scan is abnormal at all rated this scan as likely normal. The "
-    "findings below still crossed their individual thresholds, so treat them "
-    "as low-confidence possibilities, not established findings. Say so "
-    "plainly at the start, and for each region, give an honest read on "
-    "whether it looks like a plausible genuine concern or more like noise."
+    "\n\nA separate screening model rated this study as likely normal, so "
+    "the findings are low-confidence. Begin with the line: \"Screening model "
+    "rates this study as likely normal; findings below are low confidence.\" "
+    "For each finding, state whether the localization looks like a plausible "
+    "concern or more like noise."
 )
 
 
 def build_system_prompt(legend: dict, likely_normal: bool) -> str:
     legend_lines = "\n".join(f"- {color}: {condition}" for condition, color in legend.items())
     return (
-        "You are assisting a prototype chest X-ray screening tool. You are "
-        "shown a composite Grad-CAM heatmap where each predicted condition "
-        "has its own fixed color, blended onto the X-ray with intensity "
-        "proportional to how strongly that region drove that condition's "
-        "prediction. The color legend for this specific image is:\n"
+        "You write the summary section of a chest X-ray decision-support "
+        "tool. You are shown the X-ray with a heatmap overlay: each flagged "
+        "condition has its own color, with intensity showing which regions "
+        "drove that condition's score. Color key (for your reading only - "
+        "never mention colors or color codes in the output):\n"
         f"{legend_lines}\n\n"
-        "Where two conditions' colors overlap in the same region, the pixel "
-        "shows a blended mix of both colors, not a new condition - call "
-        "this out explicitly if you see it, since it means the model is "
-        "drawing on the same image region for multiple findings. Write a "
-        "plain-English explanation (4-7 sentences) a non-radiologist could "
-        "use to sanity-check the results: describe where each color's "
-        "region actually is (upper/mid/lower lung zone, left/right, "
-        "central, etc.), whether that location is plausible for its "
-        "condition, and flag anything that looks like it falls outside the "
-        "lungs (ribs, spine, diaphragm edge, image borders, text markers) "
-        "as a possible red flag. Do not claim certainty, and end with one "
-        "sentence noting this is an educational prototype, not a medical "
-        "diagnosis and not a substitute for a radiologist. Write plain prose "
-        "only - the text is shown as-is on a web page, so don't use markdown "
-        "(no asterisks, bullet points, or headings)."
+        "Write one line per condition, in the order given, formatted as "
+        "\"<Condition>: <where the heatmap concentrates> - <whether that "
+        "location is consistent with the condition>.\" Use standard anatomic "
+        "terms (right/left upper, mid, lower zone; perihilar; cardiac "
+        "silhouette; costophrenic angle; apex). Keep each line under 25 "
+        "words. If a condition's heatmap falls mainly outside the lungs "
+        "(ribs, spine, diaphragm, image edge, text markers) or two "
+        "conditions rely on the same region, add a final line starting "
+        "\"Note:\". Terse, neutral, clinical register: no preamble, no first "
+        "person, no addressing the reader, no hedging adjectives like "
+        "\"interestingly\", no disclaimers (the page shows one), no markdown."
     ) + (LIKELY_NORMAL_CONTEXT if likely_normal else "")
 
 
@@ -70,27 +65,21 @@ def get_explanation(
         return f"(No ANTHROPIC_API_KEY set - skipping explanation. Model predicted: {names}.)"
 
     if not findings:
-        return (
-            "The model did not flag any of the 14 tracked conditions above "
-            "its decision threshold for this scan, i.e. a 'No Finding' "
-            "result. This is an educational prototype, not a medical "
-            "diagnosis and not a substitute for a radiologist."
-        )
+        return "No tracked condition exceeded its decision threshold."
 
     client = anthropic.Anthropic(api_key=api_key)
 
     findings_str = ", ".join(f"{f['condition']}: {f['confidence']:.1%}" for f in findings)
     user_text = (
         f"Predicted findings (above decision threshold): {findings_str}\n\n"
-        "Here is the composite color-coded Grad-CAM heatmap for this "
-        "specific X-ray. Describe what you actually see for each colored "
-        "region and whether it supports its corresponding prediction."
+        "Summarize where each condition's heatmap concentrates on this "
+        "X-ray and whether that location supports it."
     )
 
     try:
         response = client.messages.create(
             model=MODEL,
-            max_tokens=800,
+            max_tokens=400,
             system=build_system_prompt(legend, likely_normal),
             messages=[{
                 "role": "user",

@@ -1,0 +1,438 @@
+{
+  "chexpert": {
+    "n_findings": 287,
+    "chance": 0.08921099472018773,
+    "variants": {
+      "ensemble": {
+        "pointing": 0.5261324041811847,
+        "heat_in_box": 0.37769329869651164,
+        "delta_pointing": {
+          "value": 0.05226480836236934,
+          "ci95": [
+            0.014861777627576884,
+            0.08889880952380952
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.05842392043794823,
+          "ci95": [
+            -0.0910699356804479,
+            -0.025988268303064874
+          ]
+        }
+      },
+      "gradcam_l3": {
+        "pointing": 0.2857142857142857,
+        "heat_in_box": 0.22873610474359182,
+        "delta_pointing": {
+          "value": -0.18815331010452963,
+          "ci95": [
+            -0.25965255665855025,
+            -0.11458333333333333
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.20738111439086804,
+          "ci95": [
+            -0.24970032012793208,
+            -0.16757557140779206
+          ]
+        }
+      },
+      "gradcam_l3l4": {
+        "pointing": 0.5017421602787456,
+        "heat_in_box": 0.3736646500067824,
+        "delta_pointing": {
+          "value": 0.027874564459930314,
+          "ci95": [
+            -0.022390155961764212,
+            0.07985171102661597
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.0624525691276775,
+          "ci95": [
+            -0.08532544851218117,
+            -0.04004387423212795
+          ]
+        }
+      },
+      "gradcam_l4": {
+        "pointing": 0.4738675958188153,
+        "heat_in_box": 0.4361172191344599
+      },
+      "gradcampp_l4": {
+        "pointing": 0.5261324041811847,
+        "heat_in_box": 0.46969836891955663,
+        "delta_pointing": {
+          "value": 0.05226480836236934,
+          "ci95": [
+            0.013494147013255296,
+            0.09246727684882756
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": 0.03358114978509674,
+          "ci95": [
+            0.014927052931163424,
+            0.05142789642103093
+          ]
+        }
+      },
+      "hirescam_l4": {
+        "pointing": 0.4738675958188153,
+        "heat_in_box": 0.43611722012952947,
+        "delta_pointing": {
+          "value": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": 9.950695969878278e-10,
+          "ci95": [
+            -4.140856154339864e-09,
+            6.206678144311409e-09
+          ]
+        }
+      },
+      "layercam_l3l4": {
+        "pointing": 0.6132404181184669,
+        "heat_in_box": 0.4760992257828554,
+        "delta_pointing": {
+          "value": 0.13937282229965156,
+          "ci95": [
+            0.08496040109855017,
+            0.19136653575958626
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": 0.03998200664839553,
+          "ci95": [
+            0.018214247465103514,
+            0.06214162455218897
+          ]
+        }
+      },
+      "txv_l": {
+        "pointing": 0.43205574912891986,
+        "heat_in_box": 0.2880063054678212,
+        "delta_pointing": {
+          "value": -0.041811846689895474,
+          "ci95": [
+            -0.12027491408934708,
+            0.04828003818160124
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.1481109136666387,
+          "ci95": [
+            -0.19432157242564502,
+            -0.1007709051362484
+          ]
+        }
+      }
+    },
+    "per_class_pointing": {
+      "ensemble": {
+        "Atelectasis": 0.573,
+        "Cardiomegaly": 0.848,
+        "Consolidation": 0.719,
+        "Edema": 0.238,
+        "Lung Lesion": 0.0,
+        "Pleural Effusion": 0.297,
+        "Pneumothorax": 0.0
+      },
+      "gradcam_l3": {
+        "Atelectasis": 0.267,
+        "Cardiomegaly": 0.455,
+        "Consolidation": 0.438,
+        "Edema": 0.119,
+        "Lung Lesion": 1.0,
+        "Pleural Effusion": 0.188,
+        "Pneumothorax": 0.0
+      },
+      "gradcam_l3l4": {
+        "Atelectasis": 0.52,
+        "Cardiomegaly": 0.758,
+        "Consolidation": 0.719,
+        "Edema": 0.167,
+        "Lung Lesion": 0.0,
+        "Pleural Effusion": 0.391,
+        "Pneumothorax": 0.0
+      },
+      "gradcam_l4": {
+        "Atelectasis": 0.467,
+        "Cardiomegaly": 0.818,
+        "Consolidation": 0.688,
+        "Edema": 0.19,
+        "Lung Lesion": 0.0,
+        "Pleural Effusion": 0.266,
+        "Pneumothorax": 0.0
+      },
+      "gradcampp_l4": {
+        "Atelectasis": 0.493,
+        "Cardiomegaly": 0.879,
+        "Consolidation": 0.688,
+        "Edema": 0.357,
+        "Lung Lesion": 0.0,
+        "Pleural Effusion": 0.297,
+        "Pneumothorax": 0.0
+      },
+      "hirescam_l4": {
+        "Atelectasis": 0.467,
+        "Cardiomegaly": 0.818,
+        "Consolidation": 0.688,
+        "Edema": 0.19,
+        "Lung Lesion": 0.0,
+        "Pleural Effusion": 0.266,
+        "Pneumothorax": 0.0
+      },
+      "layercam_l3l4": {
+        "Atelectasis": 0.613,
+        "Cardiomegaly": 0.924,
+        "Consolidation": 0.719,
+        "Edema": 0.571,
+        "Lung Lesion": 1.0,
+        "Pleural Effusion": 0.328,
+        "Pneumothorax": 0.0
+      },
+      "txv_l": {
+        "Atelectasis": 0.453,
+        "Cardiomegaly": 0.667,
+        "Consolidation": 0.438,
+        "Edema": 0.357,
+        "Lung Lesion": 1.0,
+        "Pleural Effusion": 0.25,
+        "Pneumothorax": 0.0
+      }
+    }
+  },
+  "vindr": {
+    "n_findings": 783,
+    "chance": 0.06274562963655289,
+    "variants": {
+      "ensemble": {
+        "pointing": 0.4444444444444444,
+        "heat_in_box": 0.27736631724664856,
+        "delta_pointing": {
+          "value": -0.05491698595146871,
+          "ci95": [
+            -0.07984921414771459,
+            -0.026369094311046833
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.14869672440956772,
+          "ci95": [
+            -0.16437127595521678,
+            -0.13236455715572623
+          ]
+        }
+      },
+      "gradcam_l3": {
+        "pointing": 0.5019157088122606,
+        "heat_in_box": 0.37018782205705136,
+        "delta_pointing": {
+          "value": 0.002554278416347382,
+          "ci95": [
+            -0.03660611682255031,
+            0.043915004263403785
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.05587521959916492,
+          "ci95": [
+            -0.07726422661425203,
+            -0.0348928587568319
+          ]
+        }
+      },
+      "gradcam_l3l4": {
+        "pointing": 0.5964240102171137,
+        "heat_in_box": 0.43833042218926205,
+        "delta_pointing": {
+          "value": 0.0970625798212005,
+          "ci95": [
+            0.06909245807550893,
+            0.12549413288631514
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": 0.01226738053304578,
+          "ci95": [
+            0.0028420367905683665,
+            0.02257920935351029
+          ]
+        }
+      },
+      "gradcam_l4": {
+        "pointing": 0.49936143039591313,
+        "heat_in_box": 0.4260630416562163
+      },
+      "gradcampp_l4": {
+        "pointing": 0.5172413793103449,
+        "heat_in_box": 0.4255085269553561,
+        "delta_pointing": {
+          "value": 0.017879948914431672,
+          "ci95": [
+            0.0013328947368421052,
+            0.03430968201426039
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.0005545147008601404,
+          "ci95": [
+            -0.006919040091014744,
+            0.006007443204410358
+          ]
+        }
+      },
+      "hirescam_l4": {
+        "pointing": 0.49936143039591313,
+        "heat_in_box": 0.426063044379043,
+        "delta_pointing": {
+          "value": 0.0,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": 2.7228267695014348e-09,
+          "ci95": [
+            -1.1422052500156909e-11,
+            5.407274994977819e-09
+          ]
+        }
+      },
+      "layercam_l3l4": {
+        "pointing": 0.5964240102171137,
+        "heat_in_box": 0.42982328615018045,
+        "delta_pointing": {
+          "value": 0.0970625798212005,
+          "ci95": [
+            0.06563165301483058,
+            0.12965584132629626
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": 0.003760244493964198,
+          "ci95": [
+            -0.0054423979039308484,
+            0.013505976108407718
+          ]
+        }
+      },
+      "txv_l": {
+        "pointing": 0.20689655172413793,
+        "heat_in_box": 0.17872826000201347,
+        "delta_pointing": {
+          "value": -0.29246487867177523,
+          "ci95": [
+            -0.3307412573721949,
+            -0.2518796992481203
+          ]
+        },
+        "delta_heat_in_box": {
+          "value": -0.2473347816542028,
+          "ci95": [
+            -0.26731895825994983,
+            -0.22629085458743478
+          ]
+        }
+      }
+    },
+    "per_class_pointing": {
+      "ensemble": {
+        "Atelectasis": 0.375,
+        "Cardiomegaly": 0.712,
+        "Consolidation": 0.556,
+        "Infiltration": 0.574,
+        "Nodule/Mass": 0.203,
+        "Pleural effusion": 0.444,
+        "Pleural thickening": 0.154,
+        "Pneumothorax": 0.357,
+        "Pulmonary fibrosis": 0.265
+      },
+      "gradcam_l3": {
+        "Atelectasis": 0.125,
+        "Cardiomegaly": 0.678,
+        "Consolidation": 0.667,
+        "Infiltration": 0.426,
+        "Nodule/Mass": 0.373,
+        "Pleural effusion": 0.566,
+        "Pleural thickening": 0.374,
+        "Pneumothorax": 0.214,
+        "Pulmonary fibrosis": 0.358
+      },
+      "gradcam_l3l4": {
+        "Atelectasis": 0.75,
+        "Cardiomegaly": 0.898,
+        "Consolidation": 0.667,
+        "Infiltration": 0.723,
+        "Nodule/Mass": 0.39,
+        "Pleural effusion": 0.556,
+        "Pleural thickening": 0.301,
+        "Pneumothorax": 0.429,
+        "Pulmonary fibrosis": 0.377
+      },
+      "gradcam_l4": {
+        "Atelectasis": 0.5,
+        "Cardiomegaly": 0.894,
+        "Consolidation": 0.556,
+        "Infiltration": 0.574,
+        "Nodule/Mass": 0.186,
+        "Pleural effusion": 0.404,
+        "Pleural thickening": 0.13,
+        "Pneumothorax": 0.5,
+        "Pulmonary fibrosis": 0.265
+      },
+      "gradcampp_l4": {
+        "Atelectasis": 0.375,
+        "Cardiomegaly": 0.898,
+        "Consolidation": 0.667,
+        "Infiltration": 0.596,
+        "Nodule/Mass": 0.22,
+        "Pleural effusion": 0.414,
+        "Pleural thickening": 0.122,
+        "Pneumothorax": 0.643,
+        "Pulmonary fibrosis": 0.311
+      },
+      "hirescam_l4": {
+        "Atelectasis": 0.5,
+        "Cardiomegaly": 0.894,
+        "Consolidation": 0.556,
+        "Infiltration": 0.574,
+        "Nodule/Mass": 0.186,
+        "Pleural effusion": 0.404,
+        "Pleural thickening": 0.13,
+        "Pneumothorax": 0.5,
+        "Pulmonary fibrosis": 0.265
+      },
+      "layercam_l3l4": {
+        "Atelectasis": 0.375,
+        "Cardiomegaly": 0.905,
+        "Consolidation": 0.722,
+        "Infiltration": 0.872,
+        "Nodule/Mass": 0.356,
+        "Pleural effusion": 0.545,
+        "Pleural thickening": 0.211,
+        "Pneumothorax": 0.643,
+        "Pulmonary fibrosis": 0.404
+      },
+      "txv_l": {
+        "Atelectasis": 0.0,
+        "Cardiomegaly": 0.246,
+        "Consolidation": 0.167,
+        "Infiltration": 0.383,
+        "Nodule/Mass": 0.271,
+        "Pleural effusion": 0.434,
+        "Pleural thickening": 0.065,
+        "Pneumothorax": 0.071,
+        "Pulmonary fibrosis": 0.053
+      }
+    }
+  }
+}
