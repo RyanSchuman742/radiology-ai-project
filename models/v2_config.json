@@ -1,0 +1,38 @@
+{
+  "model": "xrv_densenet_v2.pt",
+  "thresholds": {
+    "Atelectasis": 0.2718993127346039,
+    "Cardiomegaly": 0.26726123690605164,
+    "Consolidation": 0.24742738902568817,
+    "Edema": 0.25201570987701416,
+    "Effusion": 0.3478917181491852,
+    "Emphysema": 0.10700362175703049,
+    "Fibrosis": 0.12342068552970886,
+    "Hernia": 0.6947048306465149,
+    "Infiltration": 0.3482929766178131,
+    "Mass": 0.23440252244472504,
+    "Nodule": 0.2345333844423294,
+    "Pleural_Thickening": 0.1245814636349678,
+    "Pneumonia": 0.15436631441116333,
+    "Pneumothorax": 0.18706965446472168
+  },
+  "gate_threshold": 0.21650539338588715,
+  "calibration": "matched recall to deployed on NIH val; abnormal at 90% NIH val sensitivity",
+  "deployed_val_recall": {
+    "Atelectasis": 0.7346938775510204,
+    "Cardiomegaly": 0.6948529411764706,
+    "Consolidation": 0.6125290023201856,
+    "Edema": 0.6758893280632411,
+    "Effusion": 0.7213389121338912,
+    "Emphysema": 0.726027397260274,
+    "Fibrosis": 0.6258503401360545,
+    "Hernia": 0.4090909090909091,
+    "Infiltration": 0.493942731277533,
+    "Mass": 0.6506024096385542,
+    "Nodule": 0.5264957264957265,
+    "Pleural_Thickening": 0.6212624584717608,
+    "Pneumonia": 0.5,
+    "Pneumothorax": 0.6844783715012722
+  },
+  "deployed_val_gate_recall": 0.9001044932079415
+}

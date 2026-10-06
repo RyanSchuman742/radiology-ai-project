@@ -1,0 +1,162 @@
+[
+  {
+    "epoch": 1,
+    "train_loss": 0.4827576736688614,
+    "nih_val_macro_auroc": 0.7670981798312526,
+    "vindr_val_macro_auroc": 0.855929770044401,
+    "vindr_val_abnormal_auroc": 0.8624966498771065,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9138100271821202,
+      "Pleural effusion": 0.9350050990675991,
+      "Pleural thickening": 0.8776461522828886,
+      "Pulmonary fibrosis": 0.7850248447637831,
+      "Nodule/Mass": 0.7681627269256137
+    },
+    "selection": 0.8285081999175867,
+    "minutes": 43.680428965886435
+  },
+  {
+    "epoch": 2,
+    "train_loss": 0.40905908823013304,
+    "nih_val_macro_auroc": 0.7852779902713787,
+    "vindr_val_macro_auroc": 0.8737993222276088,
+    "vindr_val_abnormal_auroc": 0.9204573525779016,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9569850138787016,
+      "Pleural effusion": 0.9495374417249417,
+      "Pleural thickening": 0.8933156076412411,
+      "Pulmonary fibrosis": 0.8509802008488337,
+      "Nodule/Mass": 0.7181783470443265
+    },
+    "selection": 0.8598448883589631,
+    "minutes": 41.91345256567001
+  },
+  {
+    "epoch": 3,
+    "train_loss": 0.4029861666381359,
+    "nih_val_macro_auroc": 0.7950853214604231,
+    "vindr_val_macro_auroc": 0.8865230820385449,
+    "vindr_val_abnormal_auroc": 0.9387096804960375,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9642299837482562,
+      "Pleural effusion": 0.9604518745143745,
+      "Pleural thickening": 0.9070925348868717,
+      "Pulmonary fibrosis": 0.8752604692977259,
+      "Nodule/Mass": 0.7255805477454962
+    },
+    "selection": 0.8734393613316686,
+    "minutes": 41.695944368839264
+  },
+  {
+    "epoch": 4,
+    "train_loss": 0.3854812840104103,
+    "nih_val_macro_auroc": 0.7999016733970103,
+    "vindr_val_macro_auroc": 0.8969539117718185,
+    "vindr_val_abnormal_auroc": 0.957065969523181,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9709212437617754,
+      "Pleural effusion": 0.9693084693084694,
+      "Pleural thickening": 0.9163561847988076,
+      "Pulmonary fibrosis": 0.8898293272748813,
+      "Nodule/Mass": 0.7383543337151585
+    },
+    "selection": 0.8846405182306699,
+    "minutes": 41.82814517021179
+  },
+  {
+    "epoch": 5,
+    "train_loss": 0.3844167314231396,
+    "nih_val_macro_auroc": 0.8051312237440371,
+    "vindr_val_macro_auroc": 0.9045536065462786,
+    "vindr_val_abnormal_auroc": 0.9573826217084148,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9777617177949404,
+      "Pleural effusion": 0.968197601010101,
+      "Pleural thickening": 0.9237654111908956,
+      "Pulmonary fibrosis": 0.9022970081747288,
+      "Nodule/Mass": 0.7507462945607275
+    },
+    "selection": 0.889022483999577,
+    "minutes": 41.6304518977801
+  },
+  {
+    "epoch": 6,
+    "train_loss": 0.3771514485359192,
+    "nih_val_macro_auroc": 0.8085504955845833,
+    "vindr_val_macro_auroc": 0.9012134912775863,
+    "vindr_val_abnormal_auroc": 0.9647733981643711,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9742596827314436,
+      "Pleural effusion": 0.9697273212898213,
+      "Pleural thickening": 0.9202216840536512,
+      "Pulmonary fibrosis": 0.90261061669373,
+      "Nodule/Mass": 0.7392481516192856
+    },
+    "selection": 0.8915124616755135,
+    "minutes": 46.69355690081914
+  },
+  {
+    "epoch": 7,
+    "train_loss": 0.3738694260120392,
+    "nih_val_macro_auroc": 0.8126577099038853,
+    "vindr_val_macro_auroc": 0.9039706027346066,
+    "vindr_val_abnormal_auroc": 0.9664177004756458,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9760448576893759,
+      "Pleural effusion": 0.9698790792540792,
+      "Pleural thickening": 0.9239051280314321,
+      "Pulmonary fibrosis": 0.906046372246343,
+      "Nodule/Mass": 0.7439775764518032
+    },
+    "selection": 0.8943486710380459,
+    "minutes": 47.66193753878276
+  },
+  {
+    "epoch": 8,
+    "train_loss": 0.3737311410427093,
+    "nih_val_macro_auroc": 0.8141440538981005,
+    "vindr_val_macro_auroc": 0.9025320887156545,
+    "vindr_val_abnormal_auroc": 0.9673600268582094,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9754462038515195,
+      "Pleural effusion": 0.9704193376068376,
+      "Pleural thickening": 0.9215257078986586,
+      "Pulmonary fibrosis": 0.903973071481835,
+      "Nodule/Mass": 0.7412961227394217
+    },
+    "selection": 0.8946787231573214,
+    "minutes": 47.17015660206477
+  },
+  {
+    "epoch": 9,
+    "train_loss": 0.3673736011981964,
+    "nih_val_macro_auroc": 0.8148792205595531,
+    "vindr_val_macro_auroc": 0.905662269078784,
+    "vindr_val_abnormal_auroc": 0.9688774775410623,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.977013849937438,
+      "Pleural effusion": 0.9701643842268841,
+      "Pleural thickening": 0.9274022828884975,
+      "Pulmonary fibrosis": 0.9086771992668531,
+      "Nodule/Mass": 0.7450536290742477
+    },
+    "selection": 0.8964729890597999,
+    "minutes": 48.45182800292969
+  },
+  {
+    "epoch": 10,
+    "train_loss": 0.3727738149821758,
+    "nih_val_macro_auroc": 0.8147638600606684,
+    "vindr_val_macro_auroc": 0.9087234377000535,
+    "vindr_val_abnormal_auroc": 0.9667257687160994,
+    "vindr_val_per_condition": {
+      "Cardiomegaly": 0.9777005939796637,
+      "Pleural effusion": 0.9692599067599068,
+      "Pleural thickening": 0.9285030822381791,
+      "Pulmonary fibrosis": 0.9096319629802566,
+      "Nodule/Mass": 0.7585216425422611
+    },
+    "selection": 0.8967376888256071,
+    "minutes": 45.91792550086975
+  }
+]

@@ -7,6 +7,7 @@ parentheses; use `scoreboard.py compare` to test whether a difference is real.
 | System | Date | Commit | Macro AUROC | Abnormal AUROC | Healthy false alarm ↓ | Trackable sensitivity ↑ |
 |---|---|---|---|---|---|---|
 | deployed | 2026-10-01 | c6015e7 | 0.899 (0.884–0.912) | 0.906 (0.893–0.920) | 28.3% (26.1%–30.7%) | 93.7% (91.6%–95.7%) |
+| v2 | 2026-10-06 | 9809339 | 0.930 (0.917–0.943) | 0.977 (0.971–0.982) | 10.4% (8.9%–11.9%) | 95.2% (93.3%–96.9%) |
 
 ## Per-condition AUROC
 
@@ -16,3 +17,4 @@ Macro AUROC averages the conditions marked *; the rest have too few test positiv
 |---|---|---|---|---|---|---|---|---|---|
 | *n positives* | 8 | 264* | 18 | 47* | 99* | 123* | 14 | 151* | 59* |
 | deployed | 0.811 | 0.926 | 0.962 | 0.913 | 0.947 | 0.916 | 0.921 | 0.801 | 0.889 |
+| v2 | 0.800 | 0.981 | 0.979 | 0.933 | 0.973 | 0.939 | 0.907 | 0.924 | 0.833 |
